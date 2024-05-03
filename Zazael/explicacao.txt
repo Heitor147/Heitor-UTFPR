@@ -1,7 +1,0 @@
-É simplesmete uma pasta que eu criei para quando e quiser criar e programar arquivos e códigos fora das aulas, e para não misturar tudo,
-eu coloco eles aqui.
-
-Lembrete: É bem chato pra executar JavaScript no VS Code, então é pra usar esse site: https://jsfiddle.net/
-
-PS: Se realmente quiser executar códigos com outras linguagens de programação, na dúvida, faz um código HTML básico
-e insere o código lá dentro. Importante lembrar disso hein!
