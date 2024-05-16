@@ -3,3 +3,8 @@ Alt + Flecha Cima/Baixo = Arrastar
 Shift + Alt + Flecha Cima/Baixo = Criar mais cursores
 Crtl + Enter = Inserir linha abaixo
 Ctrl + Shift + Enter = Inserir linha acima
+
+Extensões usadas:
+1. Live Server
+2. markdown
+3. Markdown PDF
