@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site</title>
+
+    <link rel="stylesheet" href="site.css">
+
+</head>
+<body>
+    <div class="container">
+        <ul class="menu">
+            <li><a href="#cabecalho">Home</a></li>
+            <li><a href="#secao1">Seção 1</a></li>
+            <li><a href="#secao2">Seção 2</a></li>
+            <li><a href="#secao3">Seção 3</a></li>
+            <li><a href="#contatos">Contatos</a></li>
+        </ul>
+
+        <div id="cabecalho">
+            <h3>Seção Principal</h3>
+        </div>
+        <div id="secao1">Seção 1</div>
+        <div id="secao2">Seção 2</div>
+        <div id="secao3">Seção 3</div>
+        <div id="contatos">
+            <h3>Informações de Contato</h3>
+            <div class="image">
+                <form id="myForm" class="forms">
+                    <label for="nome">Nome:</label>
+                    <input type="text" id="nome" name="nome"><br><br>
+                    <label for="idade">Idade:</label>
+                    <input type="text" id="idade" name="idade"><br><br>
+                    <label for="cpf">CPF: </label>
+                    <input type="text" id="cpf" name="cpf"><br><br>
+                    <input type="submit" value="Enviar">
+                </form>
+
+                
+            </div>
+            
+            <div id="info"></div>
+            
+            <script>
+                document.getElementById("myForm").addEventListener("submit", function(event) {
+                    event.preventDefault();
+        
+                    var nome = document.getElementById("nome").value;
+                    var idade = document.getElementById("idade").value;
+                    var cpf = document.getElementById("cpf").value;
+        
+                    if (nome.trim() === "") {
+                        alert("Por favor, digite seu nome.");
+                        return;
+                    }
+        
+                    if (isNaN(idade) || idade <= 0) {
+                        alert("Por favor, digite uma idade válida.");
+                        return;
+                    }
+        
+                    if (isNaN(cpf) || cpf <= 0) {
+                        alert("Por favor, digite um CPF válido.");
+                        return;
+                    }
+        
+                    idade = parseInt(idade);
+                    cpf = parseInt(cpf);
+        
+                    // Exibir informações na página
+                    document.getElementById("info").innerHTML = `
+                        <p>Agradeço o contato!<p>
+                    `;
+                });
+            </script>
+        </div>
+        
+        </div>
+                                        
+    </div>
+
+</body>
+</html>
