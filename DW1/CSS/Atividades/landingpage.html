@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landing Page</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --text-color: #333;
+            --background-color: #f4f4f4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            color: var(--text-color);
+            background-color: var(--background-color);
+        }
+
+        header {
+            background-color: var(--primary-color);
+            padding: 1rem 0;
+        }
+
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin: 0 1rem;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        section {
+            padding: 2rem 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #secao1 {
+            background: url('background.jpg') no-repeat center center/cover;
+            color: white;
+        }
+
+        .content {
+            text-align: center;
+        }
+
+        .back-to-top {
+            display: inline-block;
+            margin-top: 1rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        footer {
+            background-color: var(--secondary-color);
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="#secao1">Início</a></li>
+                <li><a href="#secao2">Sobre</a></li>
+                <li><a href="#secao3">Contato</a></li>
+            </ul>
+        </nav>
+    </header>
+    <section id="secao1">
+        <div class="content">
+            <h1>Bem-vindo</h1>
+            <p>Esta é a primeira seção da nossa landing page.</p>
+            <a href="#topo" class="back-to-top">Voltar ao topo</a>
+        </div>
+    </section>
+    <section id="secao2">
+        <div class="content">
+            <h2>Sobre Nós</h2>
+            <p>Informações sobre nossa empresa.</p>
+            <a href="#topo" class="back-to-top">Voltar ao topo</a>
+        </div>
+    </section>
+    <section id="secao3">
+        <div class="content">
+            <h2>Contato</h2>
+            <p>Entre em contato conosco.</p>
+            <a href="#topo" class="back-to-top">Voltar ao topo</a>
+        </div>
+    </section>
+    <footer>
+        <p>Contatos: email@exemplo.com | (00) 1234-5678</p>
+    </footer>
+    <script>
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

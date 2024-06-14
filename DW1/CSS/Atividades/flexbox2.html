@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flexbox 2</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+        }
+
+        .sidebar {
+            background-color: #7a93ff;
+            width: 200px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid black;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .header {
+            background-color: #fdfd6f;
+            padding: 20px;
+            border: 1px solid black;
+        }
+
+        .content {
+            background-color: #75ff81;
+            flex: 1;
+            padding: 20px;
+            box-sizing: border-box;
+            border: 1px solid black;
+        }
+
+        .footer {
+            background-color: #ff7878;
+            padding: 20px;
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <aside class="sidebar">Sidebar</aside>
+        <div class="main-content">
+            <header class="header">Topo</header>
+            <main class="content">Conteúdo</main>
+            <footer class="footer">Rodapé</footer>
+        </div>
+</body>
+
+</html>
