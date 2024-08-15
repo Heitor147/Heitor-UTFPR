@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário</title>
+
+    <style>
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        input {
+            background-color: lightcyan;
+            border: 1px solid cyan;
+            border-radius: 4px;
+            padding: 0.5rem;
+            color: darkcyan;
+            outline: none;
+        }
+
+        input::placeholder {
+            color: darkblue;
+        }
+
+        input[type=password] {
+            background-color: lightcoral;
+            border: 1px solid red;
+            color: darkred;
+        }
+    </style>
+
+</head>
+
+<body>
+    <h1>Formulário</h1>
+
+    <form action="#" method="get">
+        <label for="nomeUsuario">Nome: </label>
+        <input type="text" id="nomeUsuario" placeholder="Digite seu nome">
+
+        <label for="senhaUsuario">Senha: </label>
+        <input type="password" id="senhaUsuario" placeholder="Informe a sua senha">
+
+        <label for="idadeUsuario">Idade: </label>
+        <input type="number" id="idadeUsuario" placeholder="Informe a sua idade">
+
+        <div>
+            <p>Quais línguas estrangeiras você é fluente?</p>
+            <input type="checkbox" id="ingles" name="lingua1" value="ingles">
+            <label for="ingles">Tenho fluência na língua inglesa</label><br>
+            <input type="checkbox" id="espanhol" name="lingua2" value="espanhol">
+            <label for="espanhol">Tenho fluência na língua espanhola</label><br>
+            <input type="checkbox" id="frances" name="lingua3" value="frances">
+            <label for="espanhol">Tenho fluência na língua francesa</label><br>
+            <input type="checkbox" id="alemao" name="lingua4" value="alemao">
+            <label for="espanhol">Tenho fluência na língua alemã</label><br>
+            <input type="checkbox" id="italiano" name="lingua5" value="italiano">
+            <label for="espanhol">Tenho fluência na língua italiana</label><br>
+        </div>
+    </form>
+
+</body>
+
+</html>
