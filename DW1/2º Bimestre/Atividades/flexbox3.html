@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercício</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a57d3;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .container h1 {
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+        }
+
+        .card {
+            background-color: #fff;
+            color: #000;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            width: 300px;
+            margin: 0 1rem;
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        .plano-nome {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .plano-valor {
+            font-size: 2rem;
+            color: #1a57d3;
+            margin-bottom: 1rem;
+        }
+
+        .plano-descricao ul {
+            list-style: none;
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+
+        .plano-descricao ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .plano-comprar span {
+            display: inline-block;
+            background-color: #1a57d3;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+
+</head>
+<body>
+
+    <div class="container">
+        <h1>Planos</h1>
+        <div class="card">
+            <div class="plano-nome">Starter</div>
+            <div class="plano-valor">R$ 50,00</div>
+            <div class="plano-descricao">
+                <ul>
+                    <li>1 usuário</li>
+                    <li>100 GB de armazenamento</li>
+                    <li>Suporte por email</li>
+                </ul>
+            </div>
+            <div class="plano-comprar">
+                <span>Comprar</span>
+            </div>
+        </div>
+        <div class="card">
+            <div class="plano-nome">Personal</div>
+            <div class="plano-valor">R$ 100,00</div>
+            <div class="plano-descricao">
+                <ul>
+                    <li>10 usuários</li>
+                    <li>1 TB de armazenamento</li>
+                    <li>Suporte por email</li>
+                </ul>
+            </div>
+            <div class="plano-comprar">
+                <span>Comprar</span>
+            </div>
+        </div>
+        <div class="card">
+            <div class="plano-nome">Team</div>
+            <div class="plano-valor">R$ 300,00</div>
+            <div class="plano-descricao">
+                <ul>
+                    <li>50 usuários</li>
+                    <li>5 TB de armazenamento</li>
+                    <li>Suporte por email</li>
+                </ul>
+            </div>
+            <div class="plano-comprar">
+                <span>Comprar</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

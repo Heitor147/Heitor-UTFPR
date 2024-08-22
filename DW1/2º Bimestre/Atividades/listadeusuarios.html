@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a57d3;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .card {
+            background-color: #fff;
+            color: #000;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            width: 300px;
+            height: 600px;
+            margin: 0.1rem;
+            display: table-row; /* Alterado para flex */
+            align-items: center; /* Alinha os itens verticalmente */
+        }
+
+
+        .list-container {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            list-style: none;
+            padding: 0;
+        }
+
+        .list-item__image {
+            flex-shrink: 0; /* Evita que a imagem diminua */
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-right: 1rem; /* Espaço entre a imagem e o texto */
+        }
+
+        .list-item__content {
+            font-size: 16px;
+            color: #333;
+            text-align: left; /* Alinha o texto à esquerda */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="list-container">
+        <ul class="card"> <!-- Remova a classe list-item da ul -->
+            <li class="list-item"> <!-- Adicione a classe list-item ao li -->
+                <img src="user1.jpg" alt="Item Image" class="list-item__image">
+                <div>
+                    <h1 class="list-item__content">Eva Austin</h1>
+                    <p class="list-item__content">8019 Samaritan Dr</p>
+                </div>
+            </li>
+            <li class="list-item" style="padding-top: 40px;">
+                <img src="user2.jpg" alt="Item Image" class="list-item__image">
+                <div>
+                    <h1 class="list-item__content">Nathan Douglas</h1>
+                    <p class="list-item__content">8651 W Belt Line Rd</p>
+                </div>
+            </li>
+            <li class="list-item" style="padding-top: 40px;">
+                <img src="user3.jpg" alt="Item Image" class="list-item__image">
+                <div>
+                    <h1 class="list-item__content">Marshall Dunn</h1>
+                    <p class="list-item__content">5519 Nowlin Rd</p>
+                </div>
+            </li>
+            <li class="list-item" style="padding-top: 40px;">
+                <img src="user4.jpg" alt="Item Image" class="list-item__image">
+                <div>
+                    <h1 class="list-item__content">Julia Montgomery</h1>
+                    <p class="list-item__content">3328 Ranchview Dr</p>
+                </div>
+            </li>
+        </ul>
+    </div>
+</body>
+
+</html>

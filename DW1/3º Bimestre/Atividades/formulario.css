@@ -1,0 +1,116 @@
+.container {
+    height: 100vh;
+    width: 100vw;
+    background-color: grey;
+    display: flex;
+    flex-direction: row;
+}
+
+.formu {
+    height: 100%;
+    width: 50vw;
+    background-color: white;
+
+    justify-content: space-between;
+}
+
+.imag {
+    height: 120%;
+    width: 57vw;
+    background-image: url(https://img.elo7.com.br/product/zoom/1D05CA3/poster-supernatural-tamanho-90x-0-cm-lo012-geek.jpg);
+    align-content: flex-end;
+}
+
+.uppercase {
+    text-transform: uppercase;
+}
+
+h3 {
+    color: rgb(65, 64, 64);
+}
+
+.info {
+    border: 2px solid transparent;
+    height: 40vh;
+    width: 35vw;
+    margin-left: 100px;
+    margin-top: 100px;
+}
+
+.form {
+    margin-left: 8px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+input {
+    width: 33.5vw;
+    outline: none;
+}
+
+input::placeholder {
+    color: black;
+}
+
+.botao1 li {
+    background-color: rgb(85, 0, 0);
+    border: 1px solid rgb(85, 0, 0);
+    color: white;
+    transition: 0.5s;
+    list-style: none;
+    margin-right: 80px;
+    text-align: center;
+}
+
+ul.botao1 li:hover {
+    background-color: red;
+    color: black;
+}
+
+.ou {
+    text-align: center;
+    border: 2px transparent;
+}
+
+.outros li {
+    background-color: rgb(20, 20, 20);
+    border: 2px solid rgb(20, 20, 20);
+    transition: 0.5s;
+    list-style: none;
+    margin-right: 44px;
+    margin-top: 5px;
+    text-align: center;
+    color: white;
+}
+
+ul.outros li:hover {
+    background-color: rgb(255, 255, 255);
+    border: 2px solid transparent;
+    color: black;
+}
+
+.icon_img {
+    height: 30px;
+    width: 30px;
+    border: 2px transparent;
+}
+
+.diretriz {
+    height: 50px;
+    border: 2px solid transparent;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.escrita {
+    height: fit-content;
+    width: 50vw;
+    border: 2px transparent;
+    text-align: center;
+    color: rgb(255, 255, 255);
+    font-weight: bold;
+
+}

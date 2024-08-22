@@ -1,0 +1,76 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+.container {
+    width: 90%;
+    margin: auto;
+    overflow: hidden;
+}
+
+.navbar {
+    background: #333;
+    color: #fff;
+    padding: 10px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar span {
+    margin-left: 20px;
+    font-size: 24px;
+}
+
+.navbar ul {
+    list-style: none;
+    display: flex;
+    margin-right: 20px;
+}
+
+.navbar ul li {
+    margin: 0 20px;
+    cursor: pointer;
+}
+
+.navbar ul li:hover {
+    text-decoration: underline;
+}
+
+.secao_imagem {
+    height: 400px;
+    background: url('imagem-fundo.png') no-repeat center center/cover;
+    margin: 20px 0;
+}
+
+.secao_projetos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.projeto_item {
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    flex: 1 1 calc(50% - 40px);
+    margin: 10px 0;
+}
+
+.projeto_item h1 {
+    margin-bottom: 10px;
+}
+
+.projeto_item p {
+    margin-bottom: 10px;
+}
