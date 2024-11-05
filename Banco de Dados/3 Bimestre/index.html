@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico de Comissões</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Importa a biblioteca Chart.js para gráficos -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Edu+AU+VIC+WA+NT+Dots:wght@400..700&display=swap');
+        /* Importa uma fonte do Google Fonts */
+
+        body {
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            margin: 0;
+            background-color: rgb(212, 234, 248);
+        }
+
+        .topo {
+            width: 100%;
+            height: 12%;
+            background-color: rgb(212, 234, 248);
+            color: rgb(75, 216, 235);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        img {
+            height: 80%;
+            margin-right: 10px;
+        }
+
+        h1 {
+            font-family: "Edu AU VIC WA NT Dots", cursive;
+            margin: 0;
+            font-size: 24px;
+        }
+
+        #grafico-container {
+            width: 90%;
+            height: 90%;
+            margin: 0 auto;
+            background-color: #f3f1fb;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        canvas {
+            width: 100% !important; /* Faz o gráfico ocupar 100% da largura do contêiner */
+            height: auto !important; /* Ajusta a altura automaticamente */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="topo"> <!-- Início do cabeçalho da página -->
+        <img src="https://i.pinimg.com/originals/91/21/f3/9121f30436f31860ee094508a949d481.png" alt="">
+        <h1>Sapatinho de Cristal</h1> <!-- Título da página -->
+    </div>
+    <div id="grafico-container"> <!-- Container que envolve o gráfico -->
+        <canvas id="meuGrafico"></canvas> <!-- Elemento onde o gráfico será desenhado -->
+    </div>
+
+    <script>
+        // Função para criar o gráfico
+        function criarGrafico(tipo = 'bar') {
+            const ctx = document.getElementById('meuGrafico').getContext('2d');
+            const meuGrafico = new Chart(ctx, {
+                type: tipo, // Tipo de gráfico ('bar', 'line', 'pie', etc.)
+                data: {
+                    labels: [ // Rótulos para os dados no eixo X
+                        'Funcionário 1', // Substitua pelos dados reais
+                        'Funcionário 2',
+                        'Funcionário 3'
+                    ],
+                    datasets: [{ // Conjunto de dados para o gráfico
+                        label: 'Comissão Funcionários', // Rótulo do conjunto de dados
+                        data: [ // Dados a serem exibidos no gráfico
+                            100, // Substitua pelos dados reais
+                            200,
+                            150
+                        ],
+                        backgroundColor: 'rgb(212, 234, 248)', // Cor de fundo das barras
+                        borderColor: 'black', // Cor da borda das barras
+                        borderWidth: 1 // Largura da borda das barras
+                    }]
+                },
+                options: { // Opções de configuração do gráfico
+                    responsive: true, // Torna o gráfico responsivo
+                    scales: { // Configurações dos eixos
+                        x: {
+                            ticks: {
+                                autoSkip: false, // Desativa o auto skip (pular rótulos)
+                                maxRotation: 0, // Rótulos não rotacionam (horizontal)
+                                minRotation: 0 // Rótulos não rotacionam (horizontal)
+                            }
+                        },
+                        y: {
+                            beginAtZero: true // Começa o eixo Y em zero
+                        }
+                    }
+                }
+            });
+        }
+
+        // Inicializa o gráfico ao carregar a página
+        window.onload = function() {
+            criarGrafico(); // Chama a função para criar o gráfico
+        };
+    </script>
+</body>
+
+</html>
