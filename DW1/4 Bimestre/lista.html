@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trabalho</title>
+    <link rel="stylesheet" href="lista.css">
+</head>
+
+<body>
+
+    <div>
+        <h1>Desenvolvimento Web</h1>
+        <h2>Lista de Tarefas</h2>
+
+        <!-- Barra para adicionar nova tarefa -->
+        <div class="add-task checkbox-option">
+            <input type="text" id="new-task" placeholder="Digite a nova tarefa">
+            <button id="add-task-btn">+</button>
+        </div>
+
+        <div class="checkbox-container">
+            <label class="checkbox-option">
+                <input type="checkbox" name="option1" class="task-checkbox">
+                <span class="checkbox-text">Revisar Strings</span>
+                <button class="edit-btn">✏️</button>
+                <button class="delete-btn">🗑️</button>
+            </label>
+
+            <label class="checkbox-option">
+                <input type="checkbox" name="option2" class="task-checkbox">
+                <span class="checkbox-text">Revisar Arrays</span>
+                <button class="edit-btn">✏️</button>
+                <button class="delete-btn">🗑️</button>
+            </label>
+
+            <label class="checkbox-option">
+                <input type="checkbox" name="option3" class="task-checkbox">
+                <span class="checkbox-text">Revisar Objetos</span>
+                <button class="edit-btn">✏️</button>
+                <button class="delete-btn">🗑️</button>
+            </label>
+        </div>
+
+        <!-- Contador de progresso -->
+        <div id="progress-text" class="progress-text">0/3 tarefas concluídas</div>
+
+        <!-- Barra de progresso -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+    </div>
+
+    <script src="lista.js"></script>
+
+</body>
+
+</html>
