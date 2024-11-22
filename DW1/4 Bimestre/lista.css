@@ -191,3 +191,59 @@ h2 {
 .alunos-modal a:hover {
     text-decoration: underline;
 }
+
+/* Modo Escuro */
+body.dark-mode {
+    background-color: #121212;
+    color: white;
+}
+
+body.dark-mode .modal-content {
+    background-color: #333;
+    color: white;
+}
+
+body.dark-mode .close-btn {
+    color: white;
+}
+
+body.dark-mode .close-btn:hover {
+    color: #e74c3c;
+}
+
+/* Estilo do botão de alternância */
+.theme-toggle-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: transparent;
+    color: #fff;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 10px;
+    transition: background-color 0.3s ease;
+    z-index: 1001; /* Garante que o botão fique acima do conteúdo */
+}
+
+.theme-toggle-btn:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Ícone de Sol - Modo Claro */
+body:not(.dark-mode) .theme-toggle-btn .fa-sun {
+    display: inline; /* Exibe o ícone de sol no modo claro */
+}
+
+body:not(.dark-mode) .theme-toggle-btn .fa-moon {
+    display: none; /* Oculta o ícone de lua no modo claro */
+}
+
+/* Ícone de Lua - Modo Escuro */
+body.dark-mode .theme-toggle-btn .fa-moon {
+    display: inline; /* Exibe o ícone de lua no modo escuro */
+}
+
+body.dark-mode .theme-toggle-btn .fa-sun {
+    display: none; /* Oculta o ícone de sol no modo escuro */
+}

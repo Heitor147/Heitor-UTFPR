@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trabalho</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="lista.css">
 </head>
 
@@ -13,6 +14,27 @@
     <div>
         <h1>Desenvolvimento Web</h1>
         <h2>Lista de Tarefas</h2>
+
+        <!-- Botão de alternância de tema -->
+        <button id="theme-toggle" class="theme-toggle-btn">
+            <!-- Ícone de Sol para modo claro -->
+            <i class="fa fa-sun"></i>
+            <!-- Ícone de Lua para modo escuro -->
+            <i class="fa fa-moon"></i>
+        </button>
+
+        <div id="alunosModal" class="alunos-modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h3>Informações do Aluno</h3>
+                <ul>
+                    <li><strong>Nome:</strong> Heitor Henrique</li>
+                    <li><strong>Número:</strong> (44) 99743-8428</li>
+                    <li><strong>WhatsApp:</strong> <a href="https://w.app/sgQMmy" target="_blank"><i
+                                class="fab fa-whatsapp"></i> Iniciar conversa</a></li>
+                </ul>
+            </div>
+        </div>
 
         <!-- Barra para adicionar nova tarefa -->
         <div class="add-task checkbox-option">

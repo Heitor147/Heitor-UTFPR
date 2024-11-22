@@ -1,10 +1,10 @@
-// Função para adicionar nova tarefa
 function addTask() {
+
     const newTaskInput = document.getElementById('new-task');
     const newTaskText = newTaskInput.value.trim();
 
     if (newTaskText !== '') {
-        // Cria um novo label com checkbox e texto
+
         const newLabel = document.createElement('label');
         newLabel.className = 'checkbox-option';
 
@@ -17,35 +17,34 @@ function addTask() {
         newSpan.className = 'checkbox-text';
         newSpan.textContent = newTaskText;
 
-        // Botão de editar
+
         const editBtn = document.createElement('button');
         editBtn.className = 'edit-btn';
         editBtn.textContent = '✏️';
 
-        // Botão de excluir
+
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-btn';
         deleteBtn.textContent = '🗑️';
 
-        // Adiciona a tarefa ao container
+
         newLabel.appendChild(newCheckbox);
         newLabel.appendChild(newSpan);
         newLabel.appendChild(editBtn);
         newLabel.appendChild(deleteBtn);
 
-        // Adiciona o novo label à lista de checkboxes
+
         const checkboxContainer = document.querySelector('.checkbox-container');
         checkboxContainer.appendChild(newLabel);
 
-        // Limpa o campo de input
+
         newTaskInput.value = '';
 
-        // Atualiza a barra de progresso e o contador de tarefas
+
         updateProgressBar();
     }
 }
 
-// Função para editar uma tarefa
 function editTask(taskSpan) {
     const newTaskName = prompt('Edite o nome da tarefa:', taskSpan.textContent);
     if (newTaskName !== null && newTaskName.trim() !== '') {
@@ -53,7 +52,6 @@ function editTask(taskSpan) {
     }
 }
 
-// Função para excluir uma tarefa
 function deleteTask(taskLabel) {
     if (confirm('Tem certeza de que deseja excluir esta tarefa?')) {
         taskLabel.remove();
@@ -61,7 +59,6 @@ function deleteTask(taskLabel) {
     }
 }
 
-// Função para atualizar a barra de progresso e o contador
 function updateProgressBar() {
     const totalTasks = document.querySelectorAll('.task-checkbox').length;
     const completedTasks = document.querySelectorAll('.task-checkbox:checked').length;
@@ -71,23 +68,63 @@ function updateProgressBar() {
     document.getElementById('progress-text').textContent = `${completedTasks}/${totalTasks} tarefas concluídas`;
 }
 
-// Delegação de eventos para os botões de editar e excluir
 document.querySelector('.checkbox-container').addEventListener('click', (event) => {
     if (event.target.classList.contains('edit-btn')) {
-        const taskSpan = event.target.previousElementSibling;  // O span com o texto da tarefa
+        const taskSpan = event.target.previousElementSibling;
         editTask(taskSpan);
     } else if (event.target.classList.contains('delete-btn')) {
-        const taskLabel = event.target.closest('label');  // O label completo da tarefa
+        const taskLabel = event.target.closest('label');
         deleteTask(taskLabel);
     }
 });
 
-// Adiciona evento de clique no botão para adicionar nova tarefa
 document.getElementById('add-task-btn').addEventListener('click', addTask);
 
-// Também permite adicionar tarefa ao pressionar "Enter" no campo de input
 document.getElementById('new-task').addEventListener('keypress', (event) => {
     if (event.key === 'Enter') {
         addTask();
     }
 });
+
+// Obtém o modal
+var modal = document.getElementById("alunosModal");
+
+// Obtém o botão de fechar
+var span = document.getElementsByClassName("close-btn")[0];
+
+// Obtém o botão de alternância de tema
+var themeToggleBtn = document.getElementById("theme-toggle");
+
+// Função para abrir o modal
+function openModal() {
+    modal.style.display = "flex";
+}
+
+// Função para fechar o modal
+function closeModal() {
+    modal.style.display = "none";
+}
+
+// Função para alternar o tema (modo claro/escuro)
+themeToggleBtn.addEventListener("click", function() {
+    document.body.classList.toggle("dark-mode");
+});
+
+// Quando o usuário pressiona Ctrl + H, abre o modal
+document.addEventListener("keydown", function(event) {
+    if (event.ctrlKey && event.key === 'h') {
+        openModal();
+    }
+});
+
+// Quando o usuário clicar no "x", fecha o modal
+span.onclick = function() {
+    closeModal();
+}
+
+// Quando o usuário clicar fora do modal, fecha-o
+window.onclick = function(event) {
+    if (event.target === modal) {
+        closeModal();
+    }
+}
