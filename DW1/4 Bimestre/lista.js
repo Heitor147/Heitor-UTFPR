@@ -86,6 +86,13 @@ document.getElementById('new-task').addEventListener('keypress', (event) => {
     }
 });
 
+// Adiciona o listener para cada checkbox existente e futuro
+document.querySelector('.checkbox-container').addEventListener('change', (event) => {
+    if (event.target.classList.contains('task-checkbox')) {
+        updateProgressBar();
+    }
+});
+
 // Obtém o modal
 var modal = document.getElementById("alunosModal");
 
