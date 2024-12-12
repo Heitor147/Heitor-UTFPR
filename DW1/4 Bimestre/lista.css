@@ -35,24 +35,23 @@ h2 {
     padding: 10px;
     border-radius: 8px;
     width: auto;
-    justify-content: flex-start; /* Alinha os itens à esquerda */
+    justify-content: flex-start;
 }
 
 .checkbox-option input[type="checkbox"] {
-    margin-right: 10px; /* Ajuste do espaço entre o checkbox e o texto */
+    margin-right: 10px;
 }
 
 .checkbox-text {
     font-size: 16px;
-    white-space: nowrap; /* Garante que o texto não quebre em várias linhas */
+    white-space: nowrap;
 }
 
 .checkbox-option input[type="checkbox"]:checked + .checkbox-text {
     text-decoration: line-through;
-    color: #888; /* Altera a cor do texto riscado para cinza */
+    color: #888;
 }
 
-/* Estilos para a barra de adicionar tarefa */
 .add-task {
     margin-top: 20px;
     display: flex;
@@ -81,7 +80,6 @@ h2 {
     background-color: #45a049;
 }
 
-/* Estilos das opções de tarefa */
 .checkbox-option {
     display: flex;
     align-items: center;
@@ -102,7 +100,6 @@ h2 {
     margin-right: 20px;
 }
 
-/* Botões de edição e exclusão */
 .edit-btn, .delete-btn {
     background: none;
     border: none;
@@ -115,7 +112,6 @@ h2 {
     color: #4caf50;
 }
 
-/* Barra de progresso */
 .progress-container {
     width: 100%;
     background-color: #ddd;
@@ -131,25 +127,23 @@ h2 {
     border-radius: 5px;
 }
 
-/* Estilo para o contador */
 .progress-text {
     font-size: 18px;
     margin-top: 10px;
     font-weight: bold;
 }
 
-/* Modal (Aparece na frente de tudo) */
 .alunos-modal {
-    display: none; /* Inicialmente escondido */
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Fundo semitransparente */
+    background-color: rgba(0, 0, 0, 0.5);
     justify-content: center;
     align-items: center;
-    z-index: 1000; /* Garante que o modal fique acima de todo o conteúdo */
+    z-index: 1000;
 }
 
 .modal-content {
@@ -192,7 +186,6 @@ h2 {
     text-decoration: underline;
 }
 
-/* Modo Escuro */
 body.dark-mode {
     background-color: #121212;
     color: white;
@@ -211,7 +204,6 @@ body.dark-mode .close-btn:hover {
     color: #e74c3c;
 }
 
-/* Estilo do botão de alternância */
 .theme-toggle-btn {
     position: fixed;
     top: 20px;
@@ -223,27 +215,25 @@ body.dark-mode .close-btn:hover {
     cursor: pointer;
     padding: 10px;
     transition: background-color 0.3s ease;
-    z-index: 1001; /* Garante que o botão fique acima do conteúdo */
+    z-index: 1001;
 }
 
 .theme-toggle-btn:hover {
     background-color: rgba(0, 0, 0, 0.2);
 }
 
-/* Ícone de Sol - Modo Claro */
 body:not(.dark-mode) .theme-toggle-btn .fa-sun {
-    display: inline; /* Exibe o ícone de sol no modo claro */
+    display: inline;
 }
 
 body:not(.dark-mode) .theme-toggle-btn .fa-moon {
-    display: none; /* Oculta o ícone de lua no modo claro */
+    display: none; 
 }
 
-/* Ícone de Lua - Modo Escuro */
 body.dark-mode .theme-toggle-btn .fa-moon {
-    display: inline; /* Exibe o ícone de lua no modo escuro */
+    display: inline;
 }
 
 body.dark-mode .theme-toggle-btn .fa-sun {
-    display: none; /* Oculta o ícone de sol no modo escuro */
+    display: none;
 }

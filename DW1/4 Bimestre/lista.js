@@ -86,50 +86,40 @@ document.getElementById('new-task').addEventListener('keypress', (event) => {
     }
 });
 
-// Adiciona o listener para cada checkbox existente e futuro
 document.querySelector('.checkbox-container').addEventListener('change', (event) => {
     if (event.target.classList.contains('task-checkbox')) {
         updateProgressBar();
     }
 });
 
-// Obtém o modal
 var modal = document.getElementById("alunosModal");
 
-// Obtém o botão de fechar
 var span = document.getElementsByClassName("close-btn")[0];
 
-// Obtém o botão de alternância de tema
 var themeToggleBtn = document.getElementById("theme-toggle");
 
-// Função para abrir o modal
 function openModal() {
     modal.style.display = "flex";
 }
 
-// Função para fechar o modal
 function closeModal() {
     modal.style.display = "none";
 }
 
-// Função para alternar o tema (modo claro/escuro)
 themeToggleBtn.addEventListener("click", function() {
     document.body.classList.toggle("dark-mode");
 });
 
-// Quando o usuário pressiona Ctrl + H, abre o modal
 document.addEventListener("keydown", function(event) {
     if (event.ctrlKey && event.key === 'h') {
         openModal();
     }
 });
 
-// Quando o usuário clicar no "x", fecha o modal
 span.onclick = function() {
     closeModal();
 }
 
-// Quando o usuário clicar fora do modal, fecha-o
 window.onclick = function(event) {
     if (event.target === modal) {
         closeModal();
