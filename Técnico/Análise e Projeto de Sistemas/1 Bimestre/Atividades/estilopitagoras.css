@@ -1,0 +1,24 @@
+.destaque {
+    background-color: blueviolet;
+}
+
+.parte_central {
+    background-color: #F5F5B0;
+}
+
+.container {
+    background-color: #F5F5B0;
+    font-style: italic;
+}
+
+h1 {
+    text-align: center;
+    font-size: 3rem;
+}
+
+.formula {
+    text-align: center;
+    font-size: 2rem;
+    border: 2px solid black;
+    background-color: #F5F5B0;
+}
