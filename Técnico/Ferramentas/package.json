@@ -1,0 +1,17 @@
+{
+  "name": "calculadora_financeira",
+  "version": "1.0.0",
+  "description": "a",
+  "main": "calculadora_financeira.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "financeira"
+  ],
+  "author": "Heitor H. S. Chagas",
+  "license": "ISC",
+  "dependencies": {
+    "prompt-sync": "^4.2.0"
+  }
+}
