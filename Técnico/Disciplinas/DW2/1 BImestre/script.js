@@ -40,51 +40,86 @@ btnIgual.addEventListener("click", () => {
 });
 
 // Botões dos números
+btnBotoes.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    adicionaNumero(calculadora, btn.innerText);
+  });
+});
 
 // Botões dos operadores
+btnOperacoes.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    escolheOperador(calculadora, btn.innerText);
+  });
+});
 
 /****************************************************************
  * Regras da aplicação
  ****************************************************************/
 
-/* Atualiza o display da calculadora.
- *  A atualização consiste em atualizar os elementos HTML buffer e display
- *  O elemento buffer é atulizado com o atributo operandoAnterior
- *  O elemento display é atualizado com o atributo operandoAtual
- */
-function atualizaDisplay(calculadora) {}
+function atualizaDisplay(calculadora) {
+  calculadora.bufferTextoElemento.innerText = calculadora.operandoAnterior + " " + calculadora.operador;
+  calculadora.displayTextoElemento.innerText = calculadora.operandoAtual;
+}
 
-/* Limpa os atributos do objeto calculadora e atualiza o display.
- * Para atualizar o dispay, chame a função responsável por isso.
- */
-function limpaVariaveis(calculadora) {}
+function limpaVariaveis(calculadora) {
+  calculadora.operandoAnterior = "";
+  calculadora.operandoAtual = "";
+  calculadora.operador = "";
+  atualizaDisplay(calculadora);
+}
 
-/* Função chamada quando um botão de número é pressionado
- * A função recebe o objeto calculadora e o número a ser exibido no display.
- * - Adiciona um dígito no atributo operandoAtual e atualiza o display
- * O dígito "." deve receber um tratamento especial
- */
-function adicionaNumero(calculadora, numero) {}
+function adicionaNumero(calculadora, numero) {
+  if (numero === "." && calculadora.operandoAtual.includes(".")) return;
+  calculadora.operandoAtual += numero;
+  atualizaDisplay(calculadora);
+}
 
-/* Função chamada quando um botão de operador é pressionado
- * Essa função tem comportamentos diferentes dependendo do estado da calculadora.
- * Se o operandoAnterior e o operandoAtual estiverem preenchidos
- * - executar o cálculo (chamar outra função para realizar o cálculo).
- * Caso o operandoAnterior estiver vazio,
- * - armazenar o operador recebido por parâmetro no atributo operador do objeto calculadora.
- * - copiar operandoAtual para o operandoAnterior, deixando a calculadora preparada para receber o próximo número
- */
-function escolheOperador(calculadora, operador) {}
+function escolheOperador(calculadora, operador) {
+  if (calculadora.operandoAtual === "") return;
 
-/* A função recebe o objeto calculadora e executa o calculo
- * - Verificar a operação a ser executada
- * - Executar a operação
- * - Atualizar os atributos operador, operandoAnterior e operandoAtual
- * - Atualizar o display
- */
-function executaCalculo(calculadora) {}
+  if (calculadora.operandoAnterior !== "") {
+    executaCalculo(calculadora);
+  }
 
-/* Função chamada quando o botão delete for pressionado
- * Apaga o último dígito digitado no
- */
-function apagaDigito(calculadora) {}
+  calculadora.operador = operador;
+  calculadora.operandoAnterior = calculadora.operandoAtual;
+  calculadora.operandoAtual = "";
+  atualizaDisplay(calculadora);
+}
+
+function executaCalculo(calculadora) {
+  let resultado;
+  const anterior = parseFloat(calculadora.operandoAnterior);
+  const atual = parseFloat(calculadora.operandoAtual);
+
+  if (isNaN(anterior) || isNaN(atual)) return;
+
+  switch (calculadora.operador) {
+    case "+":
+      resultado = anterior + atual;
+      break;
+    case "-":
+      resultado = anterior - atual;
+      break;
+    case "*":
+      resultado = anterior * atual;
+      break;
+    case "÷":
+    case "/":
+      resultado = atual !== 0 ? anterior / atual : "Erro";
+      break;
+    default:
+      return;
+  }
+
+  calculadora.operandoAtual = resultado.toString();
+  calculadora.operador = "";
+  calculadora.operandoAnterior = "";
+  atualizaDisplay(calculadora);
+}
+
+function apagaDigito(calculadora) {
+  calculadora.operandoAtual = calculadora.operandoAtual.slice(0, -1);
+  atualizaDisplay(calculadora);
+}
