@@ -1,0 +1,14 @@
+Primeiro .then():
+- O fetch retorna uma Promise que resolve para um objeto de resposta (Response) assim que a requisição é concluída.
+- Esse objeto contém informações sobre a resposta HTTP, como o status (200, 404, etc.), os cabeçalhos e o corpo da resposta.
+- O corpo da resposta (body) ainda não está no formato legível diretamente (como JSON ou texto). Ele é um ReadableStream, que precisa ser processado.
+- Chamamos métodos como .json() (para JSON), .text() (para texto) ou .blob() (para arquivos binários) para extrair e processar o corpo da resposta.
+
+
+Segundo .then():
+- Após o primeiro .then(), obtemos os dados processados (por exemplo, no formato JSON).
+- O segundo .then() permite manipular esses dados para realizar ações específicas, como atualizar a interface do usuário ou armazenar as informações.
+
+Resumo: Os dois .then() têm propósitos distintos
+- Primeiro .then(): Processa a resposta bruta da requisição HTTP.
+- Segundo .then(): Trabalha com os dados processados (já no formato esperado).

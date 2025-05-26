@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./script.js" defer></script>
+</head>
+<body>
+    <h1>Informações de Livros</h1>
+    <form action="#" method="post">
+        <div class="form-group inline-group">
+            <label for="isbn">ISBN:</label>
+            <input type="number" id="isbn" name="isbn" placeholder="Digite o código ISBN do livro" required>
+            <button type="button" onclick="buscarlivro()">Buscar</button>
+        </div>
+        <div class="form-group">
+            <label for="titulo">Titulo:</label>
+            <input type="text" id="titulo" placeholder="Digite o titulo" required>
+        </div>
+        <div class="form-group">
+            <label for="editora">Editora:</label>
+            <input type="text" id="editora" placeholder="Digite a editora" required>
+        </div>
+        <div class="form-group">
+            <label for="autor">Autor(a):</label>
+            <input type="text" id="autor" placeholder="Digite o autor(a)" required>
+        </div>
+        <div class="form-group">
+            <label for="sinopse">Sinopse:</label>
+            <input type="text" id="sinopse" placeholder="Digite a sinopse" required>
+        </div>
+        <div class="form-group">
+            <label for="publicacao">Data de Publicação:</label>
+            <input type="number" id="publicacao" placeholder="Digite a data de publicação" required>
+        </div>
+        <div class="form-group">
+            <label for="formato">Formato:</label>
+            <input type="text" id="formato" placeholder="Digite o formato" required>
+        </div>
+        <div class="form-group">
+            <label for="paginas">Número de Páginas:</label>
+            <input type="number" id="paginas" placeholder="Digite o número de páginas" required>
+        </div>
+        <div class="form-group">
+            <label for="genero">Gênero:</label>
+            <input type="text" id="genero" placeholder="Digite o gênero" required>
+        </div>
+        <div class="form-group">
+            <label for="local">Local:</label>
+            <input type="text" id="local" placeholder="Digite o local de publicação" required>
+        </div>
+        <div class="form-group">
+            <label for="provedor">Provedor:</label>
+            <input type="text" id="provedor" placeholder="Digite o provedor" required>
+        </div>
+        <button type="submit">Enviar</button>
+    </form>
+</body>
+</html>
