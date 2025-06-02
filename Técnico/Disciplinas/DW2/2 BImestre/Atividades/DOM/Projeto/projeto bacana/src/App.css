@@ -1,8 +1,10 @@
 body {
   margin: 0;
-  background-color: black;
+  background-color: rgb(255, 141, 141);
 }
 
 .app {
   display: flex;
+  align-items: center;
+  flex
 }
