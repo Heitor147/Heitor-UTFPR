@@ -1,0 +1,14 @@
+import React, { useState } from 'react';: Importamos o useState, que é um "Hook" do React. Ele nos permite adicionar estado a componentes de função.
+const [peso, setPeso] = useState('');: Isso declara uma variável de estado peso (com valor inicial vazio) e uma função setPeso para atualizá-la. O mesmo é feito para altura, imc, classificacao e erro.
+value={peso} e onChange={handlePesoChange} nos inputs:
+
+    value={peso}: Isso faz com que o input seja um componente controlado. O valor exibido no input agora é sempre o valor do estado peso.
+    onChange={handlePesoChange}: Cada vez que o usuário digita algo, esta função é chamada. Ela pega o novo valor (e.target.value) e o usa para atualizar o estado peso com setPeso(e.target.value).
+
+onSubmit={handleSubmit} no <form>: Quando o formulário é enviado (por exemplo, clicando no botão "Calcular IMC"), a função handleSubmit é acionada.
+e.preventDefault();: Dentro de handleSubmit, esta linha é crucial. Ela evita que o navegador recarregue a página, que é o comportamento padrão de um formulário HTML.
+Lógica de Cálculo: A validação (isNaN, pesoNum <= 0) garante que os dados são válidos antes do cálculo. Em seguida, o IMC é calculado e o estado imc e classificacao são atualizados.
+Exibição Condicional:
+
+    {erro && <p style={{ color: 'red' }}>{erro}</p>}: Esta é uma forma curta de dizer "se erro tiver algum valor (ou seja, não for nulo ou vazio), renderize o parágrafo de erro".
+    {imc && (...) }: Similarmente, só exibimos o resultado do IMC e a classificação se o imc já tiver sido calculado (não for nulo).
