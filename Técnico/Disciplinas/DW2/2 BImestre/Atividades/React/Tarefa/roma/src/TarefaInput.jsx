@@ -1,7 +1,8 @@
 import { useState } from 'react';
 
-export default function TarefaImput({ onAddTarefa }) {
+export default function TarefaInput({ onAddTarefa }) {
     const [descricao, setDescricao] = useState('');
+    
         const adicionar = () => {
             if(descricao.trim()) {
                 onAddTarefa(descricao);

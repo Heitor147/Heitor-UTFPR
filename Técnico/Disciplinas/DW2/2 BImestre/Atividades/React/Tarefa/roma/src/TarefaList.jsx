@@ -1,6 +1,6 @@
 import TarefaItem from './TarefaItem';
 
-export default function TarefaList({ tarefas, onToggleConcluir, oRemoverTarefa }) {
+export default function TarefaList({ tarefas, onToggleConcluir, onRemoverTarefa }) {
     return (
         <ul>
             {tarefas.map((tarefa) => (
