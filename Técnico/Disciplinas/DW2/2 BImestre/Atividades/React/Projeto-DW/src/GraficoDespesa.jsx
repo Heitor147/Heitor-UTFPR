@@ -6,15 +6,12 @@ import {
 } from 'recharts';
 
 export default function GraficoDespesa({ despesas }) {
-    // Adicione um estado para a categoria selecionada do gráfico de linhas
     const [lineChartTargetCategory, setLineChartTargetCategory] = useState('');
 
-    // Se não houver despesas, exiba uma mensagem
     if (!despesas || despesas.length === 0) {
         return <p>Não há despesas para exibir nos gráficos.</p>;
     }
 
-    // --- Dados para o Gráfico de Barras (Número de Despesas por Categoria) ---
     const categoryData = despesas.reduce((acc, despesa) => {
         acc[despesa.category] = (acc[despesa.category] || 0) + 1;
         return acc;
@@ -25,12 +22,11 @@ export default function GraficoDespesa({ despesas }) {
         'Número de Despesas': categoryData[category]
     }));
 
-    // --- Dados para o Gráfico de Pizza (Distribuição de Despesas no Mês Atual) ---
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
 
     const despesaMensal = despesas.filter(item => {
-        const despesaDate = new Date(item.date); // Corrigido: usar 'item.date'
+        const despesaDate = new Date(item.date);
         return despesaDate.getMonth() === currentMonth && despesaDate.getFullYear() === currentYear;
     });
 
@@ -46,13 +42,11 @@ export default function GraficoDespesa({ despesas }) {
 
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF0000'];
 
-    // --- Dados para o Gráfico de Linhas (Evolução de Categoria ao Longo do Ano) ---
-    // Extrai todas as categorias únicas para o dropdown
     const allCategories = [...new Set(despesas.map(despesa => despesa.category))];
 
     const dadoAnual = despesas.filter(item => {
-        const despesaDate = new Date(item.date); // Corrigido: usar 'item.date'
-        return despesaDate.getFullYear() === currentYear && item.category === lineChartTargetCategory; // Corrigido: usar 'item.category'
+        const despesaDate = new Date(item.date);
+        return despesaDate.getFullYear() === currentYear && item.category === lineChartTargetCategory;
     }).reduce((acc, item) => {
         const month = new Date(item.date).getMonth();
         acc[month] = (acc[month] || 0) + 1;
@@ -63,7 +57,7 @@ export default function GraficoDespesa({ despesas }) {
         const monthName = new Date(currentYear, i).toLocaleString('pt-BR', { month: 'short' });
         return {
             name: monthName,
-            [lineChartTargetCategory]: dadoAnual[i] || 0 // Corrigido: usar 'dadoAnual'
+            [lineChartTargetCategory]: dadoAnual[i] || 0
         };
     });
 
@@ -72,7 +66,6 @@ export default function GraficoDespesa({ despesas }) {
             ---
             <h2>Gráficos de Despesas</h2>
 
-            {/* Gráfico de Barras: Número de Itens por Categoria */}
             <h3>Número de Itens por Categoria</h3>
             {barChartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
@@ -85,14 +78,13 @@ export default function GraficoDespesa({ despesas }) {
                         <YAxis />
                         <Tooltip />
                         <Legend />
-                        <Bar dataKey="Número de Despesas" fill="#8884d8" /> {/* Corrigido: dataKey */}
+                        <Bar dataKey="Número de Despesas" fill="#8884d8" />
                     </BarChart>
                 </ResponsiveContainer>
             ) : (
                 <p>Adicione itens para ver o gráfico de categorias.</p>
             )}
 
-            {/* Gráfico de Pizza: Distribuição de Itens no Mês Atual */}
             <h3>Distribuição de Itens no Mês Atual</h3>
             {pieChartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
@@ -119,7 +111,6 @@ export default function GraficoDespesa({ despesas }) {
                 <p>Adicione itens no mês atual para ver o gráfico de distribuição.</p>
             )}
 
-            {/* Gráfico de Linhas: Evolução de Itens de uma Categoria Selecionada ao Longo do Ano */}
             <h3>Evolução de Itens por Categoria ao Longo do Ano</h3>
 
             <p>Selecione a categoria para analisar a evolução:</p>

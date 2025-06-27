@@ -19,7 +19,7 @@ export default function ManipularDespesa() {
         localStorage.setItem('MinhasDespesas', JSON.stringify(despesas));
     }, [despesas]);
 
-    const adicionarDespesa = () => { // Nome da função corrigido
+    const adicionarDespesa = () => {
         if (inputValor.trim() !== '' && categoriaSelecionada !== '') {
             const novaDespesa = {
                 id: Date.now(),
@@ -42,7 +42,7 @@ export default function ManipularDespesa() {
         setCategoriaSelecionada(categoriaAtual)
     };
 
-    const salvarEdicaoDespesa = () => { // Nome da função mais descritivo
+    const salvarEdicaoDespesa = () => {
         if (inputValor.trim() !== '' && categoriaSelecionada !== '' && editDespesaId !== null) {
             setDespesas(
                 despesas.map((despesa) =>
