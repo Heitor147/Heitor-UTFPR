@@ -1,5 +1,7 @@
 .buttonedit {
-    background-color:darkgreen
+    background-color:darkgreen;
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
 .buttonremove {
