@@ -1,7 +1,7 @@
 function pedirUber() {
   console.log("Iniciando solicitação");
   console.log("Encontrando motorista");
-  let encontrouMotorista = false; // Simulando que não encontrou motorista  
+  let encontrouMotorista = false;
 
   const promessa = new Promise((resolve, reject) => {
     setTimeout(() => {
@@ -9,10 +9,17 @@ function pedirUber() {
       else reject(new Error("Não há motoristas disponíveis para sua corrida"));
     }, 2000);
   });
+  
   return promessa;
 }
 
-pedirUber()
-  .then((resposta) => console.log(resposta))
-  .catch((erro) => console.log(erro.message))
-  .finally(() => console.log("Solicitação finalizada"));
+async function irConfraternizacao() {
+  try {
+    const resposta = await pedirUber()
+    console.log(resposta)
+  } catch (erro) {
+    console.log(erro)
+  }
+}
+
+irConfraternizacao()

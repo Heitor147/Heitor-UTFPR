@@ -1,4 +1,3 @@
-
 function obterDados(url, callback) {
     setTimeout(() => {
       const dados = { usuario: 'João', idade: 25 }; // Simulando uma busca de dados
