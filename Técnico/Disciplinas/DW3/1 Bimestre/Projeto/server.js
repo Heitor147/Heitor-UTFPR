@@ -1,22 +1,21 @@
 import Fastify from 'fastify'
 
-const server = Fastify({
-    logger: true
+const server = Fastify()
+
+const tarefas = [
+    { id: 1, descricao: "Comprar leite"},
+    { id: 2, descricao: "Estudar para a prova"},
+    { id: 3, descricao: "Lavar o carro"}
+]
+
+server.get('/tarefas', async (req, res) => {
+    res.send(tarefas)
 })
 
-server.get('/', async (req, res) => {
-    console.log('Requisição recebida')
-    res.send('Olá, mundo!')
-})
-
-server.get('/json', async (req, res) => {
-    console.log('Requisição JSON recebida')
-    res.send({ nome: "Rafael" })
-})
-
-server.get('/html', async (req, res) => {
-    console.log('Requisição HTML recebida')
-    res.send("<h1>Olá, mundo!</h1>")
+server.post('/tarefas', async (req, res) => {
+    const tarefa = req.body
+    tarefas.push(tarefa)
+    res.send({ status: 'sucesso', message: 'Tarefa adicionada com sucesso!' })
 })
 
 try {
