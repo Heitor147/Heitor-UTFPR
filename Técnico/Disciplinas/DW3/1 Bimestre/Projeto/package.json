@@ -12,6 +12,6 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "fastify": "^5.8.2"
+    "fastify": "^5.8.4"
   }
 }
