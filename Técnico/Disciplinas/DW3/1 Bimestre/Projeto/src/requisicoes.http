@@ -21,6 +21,10 @@ Content-Type: application/json
 
 ###
 
+GET {{url}}/tarefas/resumo
+
+###
+
 GET {{url}}/tarefas/1
 
 ###

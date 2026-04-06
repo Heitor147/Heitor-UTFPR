@@ -1,5 +1,6 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
+import { tarefaRoutes } from './routes/tarefa.routes.js'
 
 const server = Fastify()
 
@@ -9,13 +10,14 @@ server.register(cors, {
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS']
 })
 
+server.register(tarefaRoutes, { prefix: '/tarefas' })
+
 server.setNotFoundHandler((request, reply) => {
     reply.code(404).send({
         status: 'error',
         message: 'O recurso solicitado não existe nesta API.',
     })
 })
-
 
 const PORT = 3000
 

@@ -6,9 +6,9 @@ const tarefas = [
     { id: 4, descricao: "Estudar JavaScript", concluido: true }
 ]
 
-export function tarefaRoutes(server) {
+export async function tarefaRoutes(server) {
     // R: Ler todas as tarefas (com filtro opcional usando Query String)
-    server.get('/tarefas', async (request, reply) => {
+    server.get('/', async (request, reply) => {
         // request.query acessa os parâmetros passados na URL após o '?' (ex: ?busca=estudar)
         const busca = request.query.busca
 
@@ -23,7 +23,7 @@ export function tarefaRoutes(server) {
         return reply.send(tarefas)
     })
 
-    server.post('/tarefas', async (request, reply) => {
+    server.post('/', async (request, reply) => {
         const { descricao } = request.body
 
         // Exercício 1: Validação de dados
@@ -44,7 +44,7 @@ export function tarefaRoutes(server) {
     })
 
     // R: Ler uma tarefa específica (READ)
-    server.get('/tarefas/:id', async (request, reply) => {
+    server.get('/:id', async (request, reply) => {
         const id = Number(request.params.id)
         const tarefa = tarefas.find(t => t.id === id)
 
@@ -56,7 +56,7 @@ export function tarefaRoutes(server) {
     })
 
     // U: Atualizar uma tarefa parcialmente (UPDATE - PATCH)
-    server.patch('/tarefas/:id', async (request, reply) => {
+    server.patch('/:id', async (request, reply) => {
         const id = Number(request.params.id)
         const index = tarefas.findIndex(t => t.id === id)
 
@@ -71,7 +71,7 @@ export function tarefaRoutes(server) {
     })
 
     // Exercício 2: Rota de "Toggle" Concluir (PATCH)
-    server.patch('/tarefas/:id/concluir', async (request, reply) => {
+    server.patch('/:id/concluir', async (request, reply) => {
         const id = Number(request.params.id)
         const index = tarefas.findIndex(t => t.id === id)
 
@@ -84,7 +84,7 @@ export function tarefaRoutes(server) {
     })
 
     // D: Deletar uma tarefa (DELETE)
-    server.delete('/tarefas/:id', async (request, reply) => {
+    server.delete('/:id', async (request, reply) => {
         const id = Number(request.params.id)
         const index = tarefas.findIndex(t => t.id === id)
 
@@ -98,7 +98,7 @@ export function tarefaRoutes(server) {
     })
 
     // Exercício 4: Rota de Estatísticas/Resumo (GET)
-    server.get('/tarefas/resumo', async (request, reply) => {
+    server.get('/resumo', async (request, reply) => {
         const total = tarefas.length
         const concluidas = tarefas.filter(t => t.concluido).length
         const pendentes = total - concluidas
