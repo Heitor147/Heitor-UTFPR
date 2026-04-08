@@ -1,4 +1,4 @@
-import { listar, criar, buscarPorId, atualizar, remover, obterResumo } from '../models/tarefa.model.js'
+import { listar, criar, buscarPorId, atualizar, remover, obterResumo, listarPendentes } from '../models/tarefa.model.js'
 
 export async function listarTarefas(request, reply) {
     console.log('Controller listarTarefas chamado');
@@ -71,4 +71,10 @@ export async function removerTarefa(request, reply) {
 export async function resumoTarefas(request, reply) {
     const resumo = await obterResumo()
     return reply.send(resumo)
+}
+
+export async function listarTarefasPendentes(request, reply) {
+    console.log('Controller listarTarefasPendentes chamado')
+    const resultado = await listarPendentes()
+    return reply.send(resultado)
 }

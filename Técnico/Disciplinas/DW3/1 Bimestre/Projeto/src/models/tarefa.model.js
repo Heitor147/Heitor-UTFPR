@@ -13,6 +13,11 @@ export async function listar(busca) {
     return tarefas
 }
 
+export async function listarPendentes() {
+    console.log('Model listarPendentes chamado')
+    return tarefas.filter(t => !t.concluido)
+}
+
 export async function criar(descricao) {
     console.log('Model criar chamado')
     const novoId = tarefas.length > 0 ? tarefas[tarefas.length - 1].id + 1 : 1
