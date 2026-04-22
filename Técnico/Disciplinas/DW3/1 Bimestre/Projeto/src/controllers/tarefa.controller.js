@@ -1,9 +1,9 @@
-import { listar, criar, buscarPorId, atualizar, remover, obterResumo, listarPendentes } from '../models/tarefa.model.js'
+import tarefaModel from '../models/tarefa.model.js'
 
 export async function listarTarefas(request, reply) {
     console.log('Controller listarTarefas chamado');
     const busca = request.query?.busca
-    const resultado = await listar(busca)
+    const resultado = await tarefaModel.listar(busca)
     return reply.send(resultado)
 }
 
@@ -17,13 +17,13 @@ export async function criarTarefa(request, reply) {
         })
     }
 
-    const nova = await criar(descricao)
+    const nova = await tarefaModel.criar(descricao)
     return reply.status(201).send(nova)
 }
 
 export async function obterTarefa(request, reply) {
     const id = Number(request.params.id)
-    const tarefa = await buscarPorId(id)
+    const tarefa = await tarefaModel.buscarPorId(id)
 
     if (!tarefa) {
         return reply.status(404).send({ status: 'error', message: 'Tarefa não encontrada' })
@@ -34,47 +34,47 @@ export async function obterTarefa(request, reply) {
 
 export async function atualizarTarefa(request, reply) {
     const id = Number(request.params.id)
-    const existente = await buscarPorId(id)
+    const existente = await tarefaModel.buscarPorId(id)
 
     if (!existente) {
         return reply.status(404).send({ status: 'error', message: 'Tarefa não encontrada' })
     }
 
-    const tarefaAtualizada = await atualizar(id, request.body)
+    const tarefaAtualizada = await tarefaModel.atualizar(id, request.body)
     return reply.send(tarefaAtualizada)
 }
 
 export async function concluirTarefa(request, reply) {
     const id = Number(request.params.id)
-    const existente = await buscarPorId(id)
+    const existente = await tarefaModel.buscarPorId(id)
 
     if (!existente) {
         return reply.status(404).send({ status: 'error', message: 'Tarefa não encontrada' })
     }
 
-    const atualizado = await atualizar(id, { ...existente, concluido: !existente.concluido })
+    const atualizado = await tarefaModel.atualizar(id, { ...existente, concluido: !existente.concluido })
     return reply.send(atualizado)
 }
 
 export async function removerTarefa(request, reply) {
     const id = Number(request.params.id)
-    const existente = await buscarPorId(id)
+    const existente = await tarefaModel.buscarPorId(id)
 
     if (!existente) {
         return reply.status(404).send({ status: 'error', message: 'Tarefa não encontrada' })
     }
 
-    await remover(id)
+    await tarefaModel.remover(id)
     return reply.status(204).send()
 }
 
 export async function resumoTarefas(request, reply) {
-    const resumo = await obterResumo()
+    const resumo = await tarefaModel.obterResumo()
     return reply.send(resumo)
 }
 
 export async function listarTarefasPendentes(request, reply) {
     console.log('Controller listarTarefasPendentes chamado')
-    const resultado = await listarPendentes()
+    const resultado = await tarefaModel.listarPendentes()
     return reply.send(resultado)
 }
