@@ -3,6 +3,14 @@ import tarefaModel from '../models/tarefa.model.js'
 class TarefaController {
     constructor(model) {
         this.model = model
+        this.listarTarefas = this.listarTarefas.bind(this)
+        this.criarTarefa = this.criarTarefa.bind(this)
+        this.obterTarefa = this.obterTarefa.bind(this)
+        this.atualizarTarefa = this.atualizarTarefa.bind(this)
+        this.concluirTarefa = this.concluirTarefa.bind(this)
+        this.removerTarefa = this.removerTarefa.bind(this)
+        this.resumoTarefas = this.resumoTarefas.bind(this)
+        this.obterPendentes = this.obterPendentes.bind(this)
     }
 
     async listarTarefas(request, reply) {
@@ -78,8 +86,8 @@ class TarefaController {
         return reply.send(resumo)
     }
 
-    async listarTarefasPendentes(request, reply) {
-        console.log('Controller listarTarefasPendentes chamado')
+    async obterPendentes(request, reply) {
+        console.log('Controller obterPendentes chamado')
         const resultado = await this.model.listarPendentes()
         return reply.send(resultado)
     }
