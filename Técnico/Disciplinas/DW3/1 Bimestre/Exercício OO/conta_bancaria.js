@@ -22,7 +22,7 @@ class ContaBancaria {
   }
 }
 
-// Exemplo de uso
+// Exemplos
 const conta1 = new ContaBancaria('Ana', 100);
 conta1.depositar(50);
 conta1.exibirSaldo();
