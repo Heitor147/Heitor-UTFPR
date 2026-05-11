@@ -1,7 +1,6 @@
+export async function tarefaRoutes(server, options) {
+    const { controller } = options
 
-import controller from '../controllers/tarefa.controller.js'
-
-export async function tarefaRoutes(server) {
     // R: Ler todas as tarefas (com filtro opcional usando Query String)
     server.get('/', controller.listarTarefas)
 
