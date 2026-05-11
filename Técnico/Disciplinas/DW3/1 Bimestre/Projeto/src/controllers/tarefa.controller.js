@@ -14,7 +14,11 @@ class TarefaController {
     async listarTarefas(request, reply) {
         console.log('Controller listarTarefas chamado');
         const busca = request.query?.busca
-        const resultado = await this.service.listar(busca)
+        const concluido = request.query?.concluido
+        const opcoes = {}
+        if (busca) opcoes.busca = busca
+        if (concluido) opcoes.concluido = concluido
+        const resultado = await this.service.listar(opcoes)
         return reply.send(resultado)
     }
 
@@ -57,13 +61,12 @@ class TarefaController {
 
     async concluirTarefa(request, reply) {
         const id = Number(request.params.id)
-        const existente = await this.service.buscarPorId(id)
+        const atualizado = await this.service.alternarConcluido(id)
 
-        if (!existente) {
+        if (!atualizado) {
             return reply.status(404).send({ status: 'error', message: 'Tarefa não encontrada' })
         }
 
-        const atualizado = await this.service.alternarConclusao(id, existente)
         return reply.send(atualizado)
     }
 
@@ -86,7 +89,7 @@ class TarefaController {
 
     async obterPendentes(request, reply) {
         console.log('Controller obterPendentes chamado')
-        const resultado = await this.service.listarPendentes()
+        const resultado = await this.service.listar({ concluido: 'false' })
         return reply.send(resultado)
     }
 }
