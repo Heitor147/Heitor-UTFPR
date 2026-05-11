@@ -5,7 +5,7 @@ class TarefaService {
 
     async listar(busca) {
         console.log('Service listar chamado')
-        const todasAsTarefas = await this.repository.buscarTodas()
+        const todasAsTarefas = await this.repository.buscarTodos()
         if (busca) {
             return todasAsTarefas.filter(t => t.descricao.toLowerCase().includes(busca.toLowerCase()))
         }
@@ -14,16 +14,14 @@ class TarefaService {
 
     async listarPendentes() {
         console.log('Service listarPendentes chamado')
-        const todasAsTarefas = await this.repository.buscarTodas()
+        const todasAsTarefas = await this.repository.buscarTodos()
         return todasAsTarefas.filter(t => !t.concluido)
     }
 
     async criar(descricao) {
         console.log('Service criar chamado')
-        const todasAsTarefas = await this.repository.buscarTodas()
-        const novoId = todasAsTarefas.length > 0 ? todasAsTarefas[todasAsTarefas.length - 1].id + 1 : 1
-        const novaTarefa = { id: novoId, descricao, concluido: false }
-        return await this.repository.criar(novaTarefa)
+        const novaTarefa = { descricao, concluido: false }
+        return await this.repository.salvar(novaTarefa)
     }
 
     async buscarPorId(id) {
@@ -44,14 +42,13 @@ class TarefaService {
     async alternarConclusao(id, tarefaExistente) {
         console.log('Service alternarConclusao chamado')
         return await this.repository.atualizar(id, { 
-            ...tarefaExistente, 
             concluido: !tarefaExistente.concluido 
         })
     }
 
     async obterResumo() {
         console.log('Service obterResumo chamado')
-        const todasAsTarefas = await this.repository.buscarTodas()
+        const todasAsTarefas = await this.repository.buscarTodos()
         const total = todasAsTarefas.length
         const concluidas = todasAsTarefas.filter(t => t.concluido).length
         const pendentes = total - concluidas

@@ -7,8 +7,8 @@ import TarefaController from './controllers/tarefa.controller.js'
 
 const server = Fastify()
 
-// Instancia as dependências na ordem correta
-const repository = TarefaRepository
+// Instancia as dependências na ordem correta (Dependency Injection)
+const repository = new TarefaRepository()
 const service = new TarefaService(repository)
 const controller = new TarefaController(service)
 
