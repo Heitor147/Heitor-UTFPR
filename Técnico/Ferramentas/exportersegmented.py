@@ -16,7 +16,7 @@ import os
 API = "https://en.wikipedia.org/w/api.php"
 
 ROOT_CATEGORIES = [
-    "Category:Physics",
+    "Category:Chemistry",
 ]
 
 MAX_CATEGORY_DEPTH = 5
@@ -41,13 +41,19 @@ CATEGORY_KEYWORDS = {
     # "mean", "median", "mode", "variance", "standard deviation"
 
     # Física
-    "physics", "physical", "quantum", "relativity", "thermodynamics", "mechanics", 
-    "electromagnetism", "optics", "nuclear", "particle", "astrophysics", "cosmology",
+    # "physics", "physical", "quantum", "relativity", "thermodynamics", "mechanics", "theory", "theorical physics", 
+    # "applied physics", "condensed matter", "particle physics", "nuclear physics",
+    # "electromagnetism", "optics", "nuclear", "particle", "astrophysics", "cosmology",
+
+    # Química
+    "chemistry", "chemical", "organic chemistry", "inorganic chemistry", "physical chemistry", "analytical chemistry", 
+    "biochemistry", "materials science", "nanotechnology", "pharmacology", "toxicology", "environmental chemistry", 
+    "theoretical chemistry", "computational chemistry", "chemical engineering"
 }
 
 # Termos que, se presentes no título da categoria, fazem o script descartar o ramo inteiro
 EXCLUDE_KEYWORDS = {
-    "fauna", "flora", "animals", "species", "biology", "evolution",
+    # "fauna", "flora", "animals", "species", "biology", "evolution",
     "biography", "biographies", "people", "births", "deaths", "history of", "logicians", "philosophers", "astronomers", "chemists",
     "mathematicians", "theorists", "historians", "educators", "women", "country", "physicists", "psychologists", "algebraists", "statisticians", "geneticists",
     "analysts", "economists", "fiction", "society", "information", "computer", "computational", "logic", "software", "fictional", 
@@ -196,7 +202,7 @@ def main():
     print("WIKIPEDIA TOPIC EXPORTER (TXT)")
     print("=" * 60)
     crawl_categories()
-    export_pages_segmented("Física.txt", word_limit=500000)
+    export_pages_segmented("Química.txt", word_limit=500000)
 
 if __name__ == "__main__":
     main()
