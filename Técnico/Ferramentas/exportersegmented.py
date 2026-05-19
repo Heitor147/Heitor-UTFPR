@@ -57,7 +57,7 @@ EXCLUDE_KEYWORDS = {
     # "fauna", "flora", "animals", "species", "biology", "evolution",
     "biography", "biographies", "people", "births", "deaths", "history of", "logicians", "philosophers", "astronomers", "chemists",
     "mathematicians", "theorists", "historians", "educators", "women", "country", "physicists", "psychologists", "algebraists", "statisticians", "geneticists",
-    "analysts", "economists", "fiction", "society", "information", "computer", "computational", "logic", "software", "fictional", 
+    "analysts", "economists", "fiction", "society", "information", "computer", "computational", "logic", "software", "fictional", "pathologists", "ecologists",
     "movements", "scientists", "engineers", "culture", "media", "films", "television", "games", "novels", "books", "documentary", "academic", 
     "works", "physicians","universities", "organizations", "journals", "publications", "awards", "education", "institutions", "conferences", "events", "wikipedia", "stubs", "templates", "lists of", 
     "-related lists", "statistics of", "statistical regions", "statistical areas", "distribution", "database", "databases", "data", "records and statistics", "crime", "economics", "medical"
