@@ -67,6 +67,7 @@ EXCLUDE_KEYWORDS = {
 REQUEST_DELAY = 0.3
 visited_categories = set()
 visited_pages = set()
+OUTPUT_DIR = r"C:\Users\heito\Downloads\NotebookSupremo — Ordem Natural"
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -157,7 +158,9 @@ def export_pages_segmented(base_filename, word_limit=500000):
     # Função auxiliar para gerar nome do arquivo
     def get_filename(part):
         name, ext = os.path.splitext(base_filename)
-        return f"{name}_part{part}{ext}"
+        return os.path.join(OUTPUT_DIR, f"{name}_part{part}{ext}")
+
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     f = open(get_filename(current_part), "w", encoding="utf-8")
     print(f"\n[INFO] Iniciando exportação. Limite: {word_limit} palavras por arquivo.")
