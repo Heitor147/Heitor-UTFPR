@@ -12,6 +12,7 @@ import urllib3
 from tqdm import tqdm
 from collections import deque
 import os
+import re
 
 API = "https://en.wikipedia.org/w/api.php"
 
@@ -148,6 +149,29 @@ def crawl_categories():
                 visited_pages.add(title)
         time.sleep(REQUEST_DELAY)
 
+def load_already_exported_titles(base_filename):
+    """Carrega títulos de artigos já exportados dos arquivos existentes."""
+    already_exported = set()
+    name, ext = os.path.splitext(base_filename)
+    
+    if not os.path.exists(OUTPUT_DIR):
+        return already_exported
+    
+    # Procura por todos os arquivos de partes já exportadas
+    for filename in os.listdir(OUTPUT_DIR):
+        if filename.startswith(name) and filename.endswith(ext):
+            filepath = os.path.join(OUTPUT_DIR, filename)
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    content = f.read()
+                    # Extrai os títulos usando o padrão "TITLE: {titulo}"
+                    titles = re.findall(r"TITLE: (.+?)\n", content)
+                    already_exported.update(titles)
+            except Exception as e:
+                print(f"[AVISO] Erro ao ler {filename}: {e}")
+    
+    return already_exported
+
 def export_pages_segmented(base_filename, word_limit=500000):
     titles = list(visited_pages)
     batch_size = 50
@@ -161,6 +185,17 @@ def export_pages_segmented(base_filename, word_limit=500000):
         return os.path.join(OUTPUT_DIR, f"{name}_part{part}{ext}")
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
+    
+    # Carrega títulos já exportados
+    already_exported = load_already_exported_titles(base_filename)
+    if already_exported:
+        print(f"\n[INFO] {len(already_exported)} artigos já foram exportados. Pulando...")
+        titles = [t for t in titles if t not in already_exported]
+        print(f"[INFO] {len(titles)} artigos restantes para exportar.")
+    
+    if not titles:
+        print("[OK] Todos os artigos já foram exportados!")
+        return
 
     f = open(get_filename(current_part), "w", encoding="utf-8")
     print(f"\n[INFO] Iniciando exportação. Limite: {word_limit} palavras por arquivo.")
