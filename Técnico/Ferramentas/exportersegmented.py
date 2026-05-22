@@ -17,22 +17,24 @@ import re
 API = "https://en.wikipedia.org/w/api.php"
 
 ROOT_CATEGORIES = [
-    "Category:Chemistry",
+    "Category:History by country",
+    # "Category:History by period",
+    # "Category:History by topic"
 ]
 
 MAX_CATEGORY_DEPTH = 5
 
 CATEGORY_KEYWORDS = {
     # Lógica
-    # "logic", "logical", "formal", "proof", "model", "theorem",
+    # "logic", "logical", "formal", "proof", "model", "theorem", "informal",
     # "computability", "decidability", "completeness", "consistency",
     # "set theory", "type theory", "boolean", "syntax", "semantics", "axiom"
 
     # Matemática
     # "mathematics", "math", "algebra", "linear algebra", "group theory",
-    # "ring theory", "field theory", "geometry", "topology", "analysis",
+    # "ring theory", "field theory", "geometry", "topology", "analysis", "trigonometry", "arithmetic",
     # "real analysis", "complex analysis", "calculus", "differential",
-    # "integral", "number theory", "combinatorics", "probability", 
+    # "integral", "derivative", "limit", "number theory", "combinatorics", "probability", 
     # "measure theory", "functional analysis", "matrix",
     # "vector", "tensor", "set theory", "graph theory",
     # "theorem", "proof", "metric", "category theory"
@@ -47,28 +49,50 @@ CATEGORY_KEYWORDS = {
     # "electromagnetism", "optics", "nuclear", "particle", "astrophysics", "cosmology",
 
     # Química
-    "chemistry", "chemical", "organic chemistry", "inorganic chemistry", "physical chemistry", "analytical chemistry", 
-    "biochemistry", "materials science", "nanotechnology", "pharmacology", "toxicology", "environmental chemistry", 
-    "theoretical chemistry", "computational chemistry", "chemical engineering"
+    # "chemistry", "chemical", "organic chemistry", "inorganic chemistry", "physical chemistry", "analytical chemistry", 
+    # "biochemistry", "materials science", "nanotechnology", "pharmacology", "toxicology", "environmental chemistry", 
+    # "theoretical chemistry", "computational chemistry", "chemical engineering"
+
+    # Astronomia
+    # "astronomy", "astrophysics", "cosmology", "galaxy", "star", "planet", "black hole", 
+    # "universe", "space", "celestial", "exoplanet", "supernova", "nebula", "cosmic", "dark matter", "dark energy", 
+    # "gravitational", "radiation", "telescope", "relativity", "quantum", "theory", "observatory"
+    
+    # Ciências da Terra
+    # "geology", "geophysics", "geoscience", "meteorology", "oceanography", "climatology", "seismology", 
+    # "volcanology", "paleontology", "geomorphology", "hydrology", "glaciology", "soil science"
+
+    # Biologia
+    # "biology", "biological", "life", "organism", "cell", "genetics", "evolution", 
+    # "ecology", "microbiology", "zoology", "botany", "physiology", "anatomy", "biochemistry", 
+    # "molecular biology", "neuroscience", "immunology", "developmental biology"
+
+    # História
+    "history", "historical", "ancient", "medieval", "modern", "contemporary", "war", "empire", "civilization", "revolution", "dynasty", "colonialism",
+    "renaissance", "enlightenment", "industrial", "post-industrial", "world war", "cold war"
 }
 
 # Termos que, se presentes no título da categoria, fazem o script descartar o ramo inteiro
 EXCLUDE_KEYWORDS = {
-    # "fauna", "flora", "animals", "species", "biology", "evolution",
-    "biography", "biographies", "people", "births", "deaths", "history of", "logicians", "philosophers", "astronomers", "chemists",
+    "fauna", "flora", "animals", "species", "biology", "evolution",
+    # "biography", "biographies", "people", "births", "deaths", "history of", 
+    "logicians", "philosophers", "astronomers", "chemists", "biologists", "military history", "economic history",
     "mathematicians", "theorists", "historians", "educators", "women", "country", "physicists", "psychologists", "algebraists", "statisticians", "geneticists",
-    "analysts", "economists", "fiction", "society", "information", "computer", "computational", "logic", "software", "fictional", "pathologists", "ecologists",
-    "movements", "scientists", "engineers", "culture", "media", "films", "television", "games", "novels", "books", "documentary", "academic", 
-    "works", "physicians","universities", "organizations", "journals", "publications", "awards", "education", "institutions", "conferences", "events", "wikipedia", "stubs", "templates", "lists of", 
-    "-related lists", "statistics of", "statistical regions", "statistical areas", "distribution", "database", "databases", "data", "records and statistics", "crime", "economics", "medical"
-    "categories with", "articles with", "pages with", "articles needing", "articles lacking", "articles containing", 
+    "analysts", "economists", "fiction", "society", "information", "computer", "computational", "software", "fictional", "pathologists", "ecologists", "geometers",
+    "movements", "scientists", "engineers", "culture", "media", "films", "television", "games", "novels", "books", "documentary", "academic", "biology in", "botany in", "by country", "by century", "by decade", 
+    # "by year", "by region", "by state", "by war", "by strait", "by occupation", "by conflict", 
+    # "by sea", "by island", "by body of water", "by mountain range", "people", "by city", "by location", "by university", "by institution", "by organization", "by continent", "by dependent territory",
+    "works", "physicians", "astronomers", "universities", "organizations", "literature", "journals", "publications", "awards", "education", "institutions", "conferences", "events", "wikipedia", "stubs", "templates", "lists of", 
+    # "-related lists", "algebra", "arithmetic", "geometry", "geometric", "geometrical", "calculus",
+    "statistics of", "statistical regions", "statistical areas", "distribution", "database", "databases", "data", "records and statistics", "crime", "economics", "medical"
+    "categories with", "articles with", "pages with", "articles needing", "articles lacking", "articles containing", "pages", "images",
     "articles about", "articles in", "articles with", "articles missing", "articles needing", "articles lacking", "articles containing"
 }
 
 REQUEST_DELAY = 0.3
 visited_categories = set()
 visited_pages = set()
-OUTPUT_DIR = r"C:\Users\heito\Downloads\NotebookSupremo — Ordem Natural"
+OUTPUT_DIR = r"C:\Users\heito\Downloads\Notebook Supremo\Ciências Sociais"
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -240,7 +264,7 @@ def main():
     print("WIKIPEDIA TOPIC EXPORTER (TXT)")
     print("=" * 60)
     crawl_categories()
-    export_pages_segmented("Química.txt", word_limit=500000)
+    export_pages_segmented("História.txt", word_limit=500000)
 
 if __name__ == "__main__":
     main()
