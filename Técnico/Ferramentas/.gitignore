@@ -1,0 +1,38 @@
+# Python & Virtual Environments
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Project specific
+wiktionary_exports/
+wiktionary_tracking/
+logs/
+*.log
+export_*.json
+
+# Tests
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Backup
+*.bak
+*.backup

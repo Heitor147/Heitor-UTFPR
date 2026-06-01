@@ -12,6 +12,8 @@
   "author": "Heitor H. S. Chagas",
   "license": "ISC",
   "dependencies": {
-    "prompt-sync": "^4.2.0"
+    "prompt-sync": "^4.2.0",
+    "requests": "^0.3.0",
+    "tqdm": "^2.0.3"
   }
 }
