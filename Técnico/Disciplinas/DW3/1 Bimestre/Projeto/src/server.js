@@ -13,6 +13,7 @@ import {
   ForbiddenError 
 } from './shared/errors/AppError.js'
 import exemplosRoutes from './features/exemplos/exemplos.routes.js'
+import pool from './database/pool.js'
 
 const server = Fastify()
 
@@ -25,16 +26,30 @@ server.register(cors, {
 // ========================================
 // Composition Root: Dependency Injection
 // ========================================
-// Cria as instâncias na ordem correta
 const repository = new TarefaRepository()
 const service = new TarefaService(repository)
 const controller = new TarefaController(service)
 
-// Registra as rotas, injetando o controller
 server.register(tarefaRoutes, { prefix: '/tarefas', controller })
-
-// Registra as rotas de exemplos (testes de exceções)
 server.register(exemplosRoutes, { prefix: '/exemplos' })
+
+// ========================================
+// Rotas de laboratório (validação SQL)
+// Remover após confirmação do ambiente
+// ========================================
+server.post('/lab/tarefas', async (request, reply) => {
+  const { descricao } = request.body
+  const result = await pool.query(
+    'INSERT INTO tarefas (descricao, concluido) VALUES ($1, $2) RETURNING *',
+    [descricao, false]
+  )
+  return reply.status(201).send(result.rows[0])
+})
+
+server.get('/lab/tarefas', async (request, reply) => {
+  const result = await pool.query('SELECT * FROM tarefas')
+  return reply.send(result.rows)
+})
 
 // ========================================
 // Error Handler Global
@@ -47,7 +62,6 @@ server.setErrorHandler((error, request, reply) => {
     isOperational: error.isOperational,
   })
   
-  // Verifica se é uma instância de AppError (erro operacional esperado)
   if (error instanceof AppError) {
     return reply.status(error.statusCode).send({
       status: 'error',
@@ -57,7 +71,6 @@ server.setErrorHandler((error, request, reply) => {
     })
   }
 
-  // Verifica erros específicos do Fastify
   if (error.statusCode && error.statusCode >= 400 && error.statusCode < 500) {
     return reply.status(error.statusCode).send({
       status: 'error',
@@ -66,7 +79,6 @@ server.setErrorHandler((error, request, reply) => {
     })
   }
 
-  // Erro inesperado/não operacional - não expõe detalhes internos
   console.error('Erro não operacional:', error.stack)
   return reply.status(500).send({
     status: 'error',
@@ -75,7 +87,6 @@ server.setErrorHandler((error, request, reply) => {
   })
 })
 
-// Handler para rotas não encontradas
 server.setNotFoundHandler((request, reply) => {
   reply.code(404).send({
     status: 'error',
@@ -87,10 +98,14 @@ const PORT = 3000
 
 const start = async () => {
   try {
+    // Roteiro 12: valida conexão com o pool antes de subir
+    await pool.query('SELECT 1')
+    console.log('Conexão com o banco de dados estabelecida com sucesso.')
+
     await server.listen({ port: PORT })
     console.log(`Servidor rodando em http://localhost:${PORT}`)
   } catch (erro) {
-    console.error(erro)
+    console.error('Falha ao iniciar o servidor:', erro)
     process.exit(1)
   }
 }

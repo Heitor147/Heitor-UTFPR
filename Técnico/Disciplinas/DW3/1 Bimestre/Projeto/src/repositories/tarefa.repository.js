@@ -1,46 +1,51 @@
-class TarefaRepository {
-  constructor() {
-    this.tarefas = [
-      { id: 1, descricao: "Fazer compras", concluido: false },
-      { id: 2, descricao: "Lavar o carro", concluido: false },
-      { id: 3, descricao: "Estudar Fastify", concluido: true }
-    ]
-  }
+import pool from '../database/pool.js'
 
+class TarefaRepository {
   async buscarTodos() {
-    console.log("Repository: buscarTodos chamado")
-    return this.tarefas
+    console.log('Repository: buscarTodos chamado')
+    const result = await pool.query('SELECT * FROM tarefas')
+    return result.rows
   }
 
   async buscarPorId(id) {
-    console.log("Repository: buscarPorId chamado")
-    return this.tarefas.find(t => t.id === id) ?? null
+    console.log('Repository: buscarPorId chamado')
+    const result = await pool.query(
+      'SELECT * FROM tarefas WHERE id = $1',
+      [id]
+    )
+    return result.rows[0] ?? null
   }
 
   async salvar(tarefa) {
-    console.log("Repository: salvar chamado")
-    const novoId = this.tarefas.length > 0
-      ? this.tarefas[this.tarefas.length - 1].id + 1
-      : 1
-    const novaTarefa = { id: novoId, ...tarefa }
-    this.tarefas.push(novaTarefa)
-    return novaTarefa
+    console.log('Repository: salvar chamado')
+    const result = await pool.query(
+      'INSERT INTO tarefas (descricao, concluido) VALUES ($1, $2) RETURNING *',
+      [tarefa.descricao, tarefa.concluido]
+    )
+    return result.rows[0]
   }
 
   async atualizar(id, dadosAtualizados) {
-    console.log("Repository: atualizar chamado")
-    const index = this.tarefas.findIndex(t => t.id === id)
-    if (index === -1) return null
-    this.tarefas[index] = { ...this.tarefas[index], ...dadosAtualizados, id }
-    return this.tarefas[index]
+    console.log('Repository: atualizar chamado')
+    const atual = await this.buscarPorId(id)
+    if (!atual) return null
+
+    const dados = { ...atual, ...dadosAtualizados }
+
+    const result = await pool.query(
+      'UPDATE tarefas SET descricao = $1, concluido = $2 WHERE id = $3 RETURNING *',
+      [dados.descricao, dados.concluido, id]
+    )
+    return result.rows[0]
   }
 
   async remover(id) {
-    console.log("Repository: remover chamado")
-    const index = this.tarefas.findIndex(t => t.id === id)
-    if (index === -1) return false
-    this.tarefas.splice(index, 1)
-    return true
+    console.log('Repository: remover chamado')
+    const result = await pool.query(
+      'DELETE FROM tarefas WHERE id = $1',
+      [id]
+    )
+    return result.rowCount > 0
   }
 }
 
