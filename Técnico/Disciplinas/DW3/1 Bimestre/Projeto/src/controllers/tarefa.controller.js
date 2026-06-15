@@ -1,3 +1,5 @@
+import { AppError } from '../errors/AppError.js'
+
 class TarefaController {
   constructor(service) {
     this.service = service
@@ -14,7 +16,7 @@ class TarefaController {
     console.log("Controller: criarTarefa chamado")
     const { descricao } = request.body
     if (!descricao || descricao.trim() === '') {
-      return reply.status(400).send({ status: 'error', message: 'A descrição da tarefa é obrigatória' })
+      throw new AppError('A descrição da tarefa é obrigatória', 400)
     }
     const novaTarefa = await this.service.criar(descricao)
     return reply.status(201).send(novaTarefa)
@@ -24,9 +26,6 @@ class TarefaController {
     console.log("Controller: obterTarefa chamado")
     const id = Number(request.params.id)
     const tarefa = await this.service.buscarPorId(id)
-    if (!tarefa) {
-      return reply.status(404).send({ status: 'error', message: 'Tarefa não encontrada' })
-    }
     return reply.send(tarefa)
   }
 
@@ -34,9 +33,6 @@ class TarefaController {
     console.log("Controller: atualizarTarefa chamado")
     const id = Number(request.params.id)
     const tarefa = await this.service.atualizar(id, request.body)
-    if (!tarefa) {
-      return reply.status(404).send({ status: 'error', message: 'Tarefa não encontrada' })
-    }
     return reply.send(tarefa)
   }
 
@@ -44,19 +40,13 @@ class TarefaController {
     console.log("Controller: concluirTarefa chamado")
     const id = Number(request.params.id)
     const tarefa = await this.service.alternarConcluido(id)
-    if (!tarefa) {
-      return reply.status(404).send({ status: 'error', message: 'Tarefa não encontrada' })
-    }
     return reply.send(tarefa)
   }
 
   async removerTarefa(request, reply) {
     console.log("Controller: removerTarefa chamado")
     const id = Number(request.params.id)
-    const removido = await this.service.remover(id)
-    if (!removido) {
-      return reply.status(404).send({ status: 'error', message: 'Tarefa não encontrada' })
-    }
+    await this.service.remover(id)
     return reply.status(204).send()
   }
 

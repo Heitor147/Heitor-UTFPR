@@ -1,3 +1,5 @@
+import { AppError } from '../errors/AppError.js'
+
 class TarefaService {
   constructor(repository) {
     this.repository = repository
@@ -30,23 +32,37 @@ class TarefaService {
 
   async buscarPorId(id) {
     console.log("Service: buscarPorId chamado")
-    return this.repository.buscarPorId(id)
+    const tarefa = await this.repository.buscarPorId(id)
+    if (!tarefa) {
+      throw new AppError('Tarefa não encontrada', 404)
+    }
+    return tarefa
   }
 
   async atualizar(id, dadosAtualizados) {
     console.log("Service: atualizar chamado")
+    const tarefaExistente = await this.repository.buscarPorId(id)
+    if (!tarefaExistente) {
+      throw new AppError('Tarefa não encontrada', 404)
+    }
     return this.repository.atualizar(id, dadosAtualizados)
   }
 
   async alternarConcluido(id) {
     console.log("Service: alternarConcluido chamado")
     const tarefa = await this.repository.buscarPorId(id)
-    if (!tarefa) return null
+    if (!tarefa) {
+      throw new AppError('Tarefa não encontrada', 404)
+    }
     return this.repository.atualizar(id, { concluido: !tarefa.concluido })
   }
 
   async remover(id) {
     console.log("Service: remover chamado")
+    const tarefaExistente = await this.repository.buscarPorId(id)
+    if (!tarefaExistente) {
+      throw new AppError('Tarefa não encontrada', 404)
+    }
     return this.repository.remover(id)
   }
 

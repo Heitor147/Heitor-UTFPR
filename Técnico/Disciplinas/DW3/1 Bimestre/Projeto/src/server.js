@@ -4,6 +4,7 @@ import tarefaRoutes from './routes/tarefa.routes.js'
 import TarefaRepository from './repositories/tarefa.repository.js'
 import TarefaService from './services/tarefa.service.js'
 import TarefaController from './controllers/tarefa.controller.js'
+import { AppError } from './errors/AppError.js'
 
 const server = Fastify()
 
@@ -23,6 +24,26 @@ const controller = new TarefaController(service)
 
 // Registra as rotas, injetando o controller
 server.register(tarefaRoutes, { prefix: '/tarefas', controller })
+
+// ========================================
+// Error Handler Global
+// ========================================
+server.setErrorHandler((error, request, reply) => {
+  console.error('Error Handler capturou:', error)
+  
+  if (error instanceof AppError) {
+    return reply.status(error.statusCode).send({
+      status: 'error',
+      message: error.message,
+    })
+  }
+
+  // Erro inesperado
+  return reply.status(500).send({
+    status: 'error',
+    message: 'Erro interno do servidor',
+  })
+})
 
 // Handler para rotas não encontradas
 server.setNotFoundHandler((request, reply) => {
