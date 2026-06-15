@@ -6,9 +6,14 @@ class TarefaService {
   }
 
   async listar(opcoes = {}) {
-    console.log("Service: listar chamado")
-    const { busca, concluido } = opcoes
-    let resultado = await this.repository.buscarTodos()
+    console.log('Service: listar chamado')
+    const { busca, concluido, projetoId } = opcoes
+
+    // Se vier projetoId, delega direto para a query especializada.
+    // Filtros de busca e concluido continuam funcionando em cima do resultado.
+    let resultado = projetoId
+      ? await this.repository.buscarPorProjeto(Number(projetoId))
+      : await this.repository.buscarTodos()
 
     if (busca) {
       resultado = resultado.filter(t =>
@@ -24,17 +29,21 @@ class TarefaService {
     return resultado
   }
 
-  async criar(descricao) {
-    console.log("Service: criar chamado")
+  async criar(descricao, projetoId) {
+    console.log('Service: criar chamado')
     if (!descricao || typeof descricao !== 'string' || descricao.trim() === '') {
       throw new ValidationError('A descrição da tarefa é obrigatória e deve ser do tipo string')
     }
-    const novaTarefa = await this.repository.salvar({ descricao, concluido: false })
+    const novaTarefa = await this.repository.salvar({
+      descricao,
+      concluido: false,
+      projetoId: projetoId ?? null,
+    })
     return novaTarefa
   }
 
   async buscarPorId(id) {
-    console.log("Service: buscarPorId chamado")
+    console.log('Service: buscarPorId chamado')
     const tarefa = await this.repository.buscarPorId(id)
     if (!tarefa) {
       throw new NotFoundError('Tarefa não encontrada')
@@ -43,7 +52,7 @@ class TarefaService {
   }
 
   async atualizar(id, dadosAtualizados) {
-    console.log("Service: atualizar chamado")
+    console.log('Service: atualizar chamado')
     const tarefaExistente = await this.repository.buscarPorId(id)
     if (!tarefaExistente) {
       throw new NotFoundError('Tarefa não encontrada')
@@ -52,7 +61,7 @@ class TarefaService {
   }
 
   async alternarConcluido(id) {
-    console.log("Service: alternarConcluido chamado")
+    console.log('Service: alternarConcluido chamado')
     const tarefa = await this.repository.buscarPorId(id)
     if (!tarefa) {
       throw new NotFoundError('Tarefa não encontrada')
@@ -61,7 +70,7 @@ class TarefaService {
   }
 
   async remover(id) {
-    console.log("Service: remover chamado")
+    console.log('Service: remover chamado')
     const tarefaExistente = await this.repository.buscarPorId(id)
     if (!tarefaExistente) {
       throw new NotFoundError('Tarefa não encontrada')
@@ -70,7 +79,7 @@ class TarefaService {
   }
 
   async obterResumo() {
-    console.log("Service: obterResumo chamado")
+    console.log('Service: obterResumo chamado')
     const todas = await this.repository.buscarTodos()
     const total = todas.length
     const concluidas = todas.filter(t => t.concluido).length
