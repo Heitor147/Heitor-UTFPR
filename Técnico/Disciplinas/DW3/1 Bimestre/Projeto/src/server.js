@@ -4,7 +4,15 @@ import tarefaRoutes from './routes/tarefa.routes.js'
 import TarefaRepository from './repositories/tarefa.repository.js'
 import TarefaService from './services/tarefa.service.js'
 import TarefaController from './controllers/tarefa.controller.js'
-import { AppError } from './errors/AppError.js'
+import { 
+  AppError, 
+  ValidationError, 
+  NotFoundError, 
+  ConflictError,
+  UnauthorizedError,
+  ForbiddenError 
+} from './shared/errors/AppError.js'
+import exemplosRoutes from './features/exemplos/exemplos.routes.js'
 
 const server = Fastify()
 
@@ -25,23 +33,45 @@ const controller = new TarefaController(service)
 // Registra as rotas, injetando o controller
 server.register(tarefaRoutes, { prefix: '/tarefas', controller })
 
+// Registra as rotas de exemplos (testes de exceções)
+server.register(exemplosRoutes, { prefix: '/exemplos' })
+
 // ========================================
 // Error Handler Global
 // ========================================
 server.setErrorHandler((error, request, reply) => {
-  console.error('Error Handler capturou:', error)
+  console.error('Error Handler capturou:', {
+    name: error.name,
+    message: error.message,
+    statusCode: error.statusCode,
+    isOperational: error.isOperational,
+  })
   
+  // Verifica se é uma instância de AppError (erro operacional esperado)
   if (error instanceof AppError) {
     return reply.status(error.statusCode).send({
       status: 'error',
+      name: error.name,
       message: error.message,
+      statusCode: error.statusCode,
     })
   }
 
-  // Erro inesperado
+  // Verifica erros específicos do Fastify
+  if (error.statusCode && error.statusCode >= 400 && error.statusCode < 500) {
+    return reply.status(error.statusCode).send({
+      status: 'error',
+      message: error.message,
+      statusCode: error.statusCode,
+    })
+  }
+
+  // Erro inesperado/não operacional - não expõe detalhes internos
+  console.error('Erro não operacional:', error.stack)
   return reply.status(500).send({
     status: 'error',
-    message: 'Erro interno do servidor',
+    message: 'Erro interno do servidor. Entre em contato com o suporte.',
+    errorId: error.requestId || 'unknown',
   })
 })
 

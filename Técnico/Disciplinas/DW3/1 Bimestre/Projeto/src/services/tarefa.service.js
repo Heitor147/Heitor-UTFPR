@@ -1,4 +1,4 @@
-import { AppError } from '../errors/AppError.js'
+import { ValidationError, NotFoundError } from '../shared/errors/AppError.js'
 
 class TarefaService {
   constructor(repository) {
@@ -26,6 +26,9 @@ class TarefaService {
 
   async criar(descricao) {
     console.log("Service: criar chamado")
+    if (!descricao || typeof descricao !== 'string' || descricao.trim() === '') {
+      throw new ValidationError('A descrição da tarefa é obrigatória e deve ser do tipo string')
+    }
     const novaTarefa = await this.repository.salvar({ descricao, concluido: false })
     return novaTarefa
   }
@@ -34,7 +37,7 @@ class TarefaService {
     console.log("Service: buscarPorId chamado")
     const tarefa = await this.repository.buscarPorId(id)
     if (!tarefa) {
-      throw new AppError('Tarefa não encontrada', 404)
+      throw new NotFoundError('Tarefa não encontrada')
     }
     return tarefa
   }
@@ -43,7 +46,7 @@ class TarefaService {
     console.log("Service: atualizar chamado")
     const tarefaExistente = await this.repository.buscarPorId(id)
     if (!tarefaExistente) {
-      throw new AppError('Tarefa não encontrada', 404)
+      throw new NotFoundError('Tarefa não encontrada')
     }
     return this.repository.atualizar(id, dadosAtualizados)
   }
@@ -52,7 +55,7 @@ class TarefaService {
     console.log("Service: alternarConcluido chamado")
     const tarefa = await this.repository.buscarPorId(id)
     if (!tarefa) {
-      throw new AppError('Tarefa não encontrada', 404)
+      throw new NotFoundError('Tarefa não encontrada')
     }
     return this.repository.atualizar(id, { concluido: !tarefa.concluido })
   }
@@ -61,7 +64,7 @@ class TarefaService {
     console.log("Service: remover chamado")
     const tarefaExistente = await this.repository.buscarPorId(id)
     if (!tarefaExistente) {
-      throw new AppError('Tarefa não encontrada', 404)
+      throw new NotFoundError('Tarefa não encontrada')
     }
     return this.repository.remover(id)
   }

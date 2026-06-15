@@ -1,4 +1,4 @@
-import { AppError } from '../errors/AppError.js'
+import { ValidationError } from '../shared/errors/AppError.js'
 
 class TarefaController {
   constructor(service) {
@@ -15,9 +15,6 @@ class TarefaController {
   async criarTarefa(request, reply) {
     console.log("Controller: criarTarefa chamado")
     const { descricao } = request.body
-    if (!descricao || descricao.trim() === '') {
-      throw new AppError('A descrição da tarefa é obrigatória', 400)
-    }
     const novaTarefa = await this.service.criar(descricao)
     return reply.status(201).send(novaTarefa)
   }
