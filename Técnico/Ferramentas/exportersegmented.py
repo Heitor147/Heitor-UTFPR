@@ -17,9 +17,7 @@ import re
 API = "https://en.wikipedia.org/w/api.php"
 
 ROOT_CATEGORIES = [
-    "Category:History by country",
-    # "Category:History by period",
-    # "Category:History by topic"
+    "Category:Statistics",
 ]
 
 MAX_CATEGORY_DEPTH = 5
@@ -40,8 +38,16 @@ CATEGORY_KEYWORDS = {
     # "theorem", "proof", "metric", "category theory"
 
     # Estatística
-    # "statistics", "statistical", "statistic", "data", "probability",
-    # "mean", "median", "mode", "variance", "standard deviation"
+    "statistics", "statistical", "statistic", "data", "probability",
+    "mean", "median", "mode", "variance", "standard deviation"
+
+    # Ciência da Computação
+    # "computer science", "computing", "algorithm", "data structure", "programming", 
+    # "software", "hardware", "internet", "web",
+    # "network", "database", "artificial intelligence", "machine learning", "deep learning", "neural network", 
+    # "computer graphics", "operating system", "compiler", "interpreter", "programming language", "cryptography",
+    # "cloud computing", "distributed systems", "parallel computing", "computer architecture", "computer vision",
+    # "cybersecurity", "information theory", "data science", "game theory", "decision theory", "theorical computer science", "systems science"
 
     # Física
     # "physics", "physical", "quantum", "relativity", "thermodynamics", "mechanics", "theory", "theorical physics", 
@@ -68,31 +74,40 @@ CATEGORY_KEYWORDS = {
     # "molecular biology", "neuroscience", "immunology", "developmental biology"
 
     # História
-    "history", "historical", "ancient", "medieval", "modern", "contemporary", "war", "empire", "civilization", "revolution", "dynasty", "colonialism",
-    "renaissance", "enlightenment", "industrial", "post-industrial", "world war", "cold war"
+    # "history", "historical", "ancient", "medieval", "modern", "contemporary", "war", "empire", "civilization", "revolution", "dynasty", "colonialism",
+    # "renaissance", "enlightenment", "industrial", "post-industrial", "world war", "cold war"
 }
 
 # Termos que, se presentes no título da categoria, fazem o script descartar o ramo inteiro
 EXCLUDE_KEYWORDS = {
     "fauna", "flora", "animals", "species", "biology", "evolution",
-    # "biography", "biographies", "people", "births", "deaths", "history of", 
+    # "biography", "biographies", "people", "births", "deaths",
     "logicians", "philosophers", "astronomers", "chemists", "biologists", "military history", "economic history",
     "mathematicians", "theorists", "historians", "educators", "women", "country", "physicists", "psychologists", "algebraists", "statisticians", "geneticists",
-    "analysts", "economists", "fiction", "society", "information", "computer", "computational", "software", "fictional", "pathologists", "ecologists", "geometers",
-    "movements", "scientists", "engineers", "culture", "media", "films", "television", "games", "novels", "books", "documentary", "academic", "biology in", "botany in", "by country", "by century", "by decade", 
-    # "by year", "by region", "by state", "by war", "by strait", "by occupation", "by conflict", 
-    # "by sea", "by island", "by body of water", "by mountain range", "people", "by city", "by location", "by university", "by institution", "by organization", "by continent", "by dependent territory",
-    "works", "physicians", "astronomers", "universities", "organizations", "literature", "journals", "publications", "awards", "education", "institutions", "conferences", "events", "wikipedia", "stubs", "templates", "lists of", 
-    # "-related lists", "algebra", "arithmetic", "geometry", "geometric", "geometrical", "calculus",
-    "statistics of", "statistical regions", "statistical areas", "distribution", "database", "databases", "data", "records and statistics", "crime", "economics", "medical"
-    "categories with", "articles with", "pages with", "articles needing", "articles lacking", "articles containing", "pages", "images",
-    "articles about", "articles in", "articles with", "articles missing", "articles needing", "articles lacking", "articles containing"
+    "analysts", "economists", "fiction", "society", "information", 
+    # "computer", "computational", "software", 
+    "fictional", "pathologists", "ecologists", "geometers",
+    "movements", "scientists", "engineers", "culture", "media", "films", "television", "games", "novels", "books", "documentary", "academic", "biology in", "botany in", 
+    "by country", "by century", "by decade", "by year", "by region", "by state", "by war", "by strait", "by occupation", "by conflict", "by company", "by language", "by profession", "by field", "by discipline", "by subject", "by topic", "by theme", "by genre",
+    "by sea", "by island", "by body of water", "by mountain range", "people", "by city", "by location", "by university", "by institution", "by organization", "by continent", "by dependent territory",
+    "works", "physicians", "astronomers", "universities", "organizations", "literature", "journals", "publications", "awards", "education", "institutions", "competitions", "research", "discoveries", "inventions", "inventions and discoveries", "inventions and innovations", 
+    "inventions and patents", "inventions and discoveries in", "inventions and innovations in", "ethics",
+    "conferences", "events", "wikipedia", "stubs", "templates", "lists of", "companies", "pioneers", "founders", "inventors", "discoverers", "explorers", "researchers", "professionals", "developed in",
+    "authors", "writers", "poets", "composers", "artists", "musicians", "law", "criticism", "regulations", "regulation", "legislation", "legal", "judicial", "political", "governmental", "administrative", "constitutional", "international law", "deaths"
+    "-related lists", 
+    "algebra", "arithmetic", "geometry", "geometric", "geometrical", "calculus", 
+    # "analysis", "analytical", "analyses",
+    # "history of", "internet in", "statistics of", "statistical regions", "statistical areas", "distribution", "database", "databases", "data", "records and statistics", "crime", "economics", "medical"
+    "categories with", "articles with", "pages with", "articles needing", "articles lacking", "articles containing", "pages", "images", "screenshots", "services", "providers", "open-source", "open source", "closed-source", "closed source", "proprietary", "freeware", 
+    "shareware", "software packages", "software applications", "software programs", "software tools", "software libraries", "software frameworks", "hardware", "software",
+    "articles about", "articles in", "articles with", "articles missing", "articles needing", "articles lacking", "articles containing", "Linux", "Microsoft", "Windows", "iOS", "Android", "Apple", 
+    "Google", "Amazon", "Facebook", "Twitter", "X", "Instagram", "Snapchat", "TikTok", "YouTube", "Reddit", "WhatsApp", "Telegram", "Signal", "Discord", "creation date"
 }
 
 REQUEST_DELAY = 0.3
 visited_categories = set()
 visited_pages = set()
-OUTPUT_DIR = r"C:\Users\heito\Downloads\Notebook Supremo\Ciências Sociais"
+OUTPUT_DIR = r"C:\Users\heito\Downloads\Notebook Supremo\Ciências Formais"
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -264,7 +279,7 @@ def main():
     print("WIKIPEDIA TOPIC EXPORTER (TXT)")
     print("=" * 60)
     crawl_categories()
-    export_pages_segmented("História.txt", word_limit=500000)
+    export_pages_segmented("Estatística.txt", word_limit=500000)
 
 if __name__ == "__main__":
     main()
