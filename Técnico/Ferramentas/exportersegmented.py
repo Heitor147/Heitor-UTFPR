@@ -17,10 +17,10 @@ import re
 API = "https://en.wikipedia.org/w/api.php"
 
 ROOT_CATEGORIES = [
-    "Category:Statistics",
+    "Category:Catholicism",
 ]
 
-MAX_CATEGORY_DEPTH = 5
+MAX_CATEGORY_DEPTH = 2
 
 CATEGORY_KEYWORDS = {
     # Lógica
@@ -38,8 +38,8 @@ CATEGORY_KEYWORDS = {
     # "theorem", "proof", "metric", "category theory"
 
     # Estatística
-    "statistics", "statistical", "statistic", "data", "probability",
-    "mean", "median", "mode", "variance", "standard deviation"
+    # "statistics", "statistical", "statistic", "data", "probability",
+    # "mean", "median", "mode", "variance", "standard deviation"
 
     # Ciência da Computação
     # "computer science", "computing", "algorithm", "data structure", "programming", 
@@ -76,6 +76,16 @@ CATEGORY_KEYWORDS = {
     # História
     # "history", "historical", "ancient", "medieval", "modern", "contemporary", "war", "empire", "civilization", "revolution", "dynasty", "colonialism",
     # "renaissance", "enlightenment", "industrial", "post-industrial", "world war", "cold war"
+
+    # Criminologia
+    # "criminology", "crime", "criminal", "law enforcement", "forensics", "criminal justice", "penology", "victimology", "criminological theory", "criminological research", "criminological methods", "criminological analysis", "criminological statistics", "criminological data", "criminological trends", "criminological patterns", 
+    # "criminological profiling", "criminological investigation", "criminological prevention", "criminological intervention", "criminological rehabilitation"
+
+    # Catolicismo
+    "catholicism", "catholic", "church", "pope", "vatican", "diocese", "parish", "sacrament", "liturgy", "canon law",
+    "catholic theology", "catholic doctrine", "catholic history", "catholic saints", "catholic orders", "catholic education", "catholic social teaching", 
+    "catholic morality", "catholic spirituality", "catholic devotions", "catholic rituals", "catholic sacraments", "catholic liturgical calendar", 
+    "catholic religious practices"
 }
 
 # Termos que, se presentes no título da categoria, fazem o script descartar o ramo inteiro
@@ -107,7 +117,7 @@ EXCLUDE_KEYWORDS = {
 REQUEST_DELAY = 0.3
 visited_categories = set()
 visited_pages = set()
-OUTPUT_DIR = r"C:\Users\heito\Downloads\Notebook Supremo\Ciências Formais"
+OUTPUT_DIR = r"C:\Users\heito\Downloads\Notebook Supremo"
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -279,7 +289,7 @@ def main():
     print("WIKIPEDIA TOPIC EXPORTER (TXT)")
     print("=" * 60)
     crawl_categories()
-    export_pages_segmented("Estatística.txt", word_limit=500000)
+    export_pages_segmented("Catolicismo.txt", word_limit=500000)
 
 if __name__ == "__main__":
     main()

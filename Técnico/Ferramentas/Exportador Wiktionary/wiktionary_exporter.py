@@ -1,19 +1,32 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Wiktionary Mass Exporter - Production Version
+Wiktionary Mass Exporter - Production Version (v2)
 Exporta artigos da Wiktionary em larga escala com suporte a categorias, filtros e controle de profundidade.
+
+Principais correções desta versão:
+- Tracking agora é persistente POR CATEGORIA (não gera um arquivo novo a cada execução).
+  Isso é o que faz o "não reexportar página já feita" funcionar de verdade.
+- Cache de templates em memória: cada template é buscado uma única vez por execução,
+  em vez de uma vez por página que o referencia.
+- OutputManager lê o tamanho real do arquivo existente ao reabrir, então o split
+  por MAX_WORDS_PER_FILE continua correto mesmo reiniciando o processo no meio.
+- Filtro de namespace menos agressivo (só descarta prefixos de namespace conhecidos,
+  não qualquer título com ":").
+- Logging consistente também no modo interativo (prints viram log também).
 """
 
 import os
+import re
 import json
 import time
-import hashlib
 import logging
+import threading
 from pathlib import Path
 from typing import Set, List, Dict, Optional, Tuple
 from collections import deque
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
 from tqdm import tqdm
@@ -24,16 +37,35 @@ from tqdm import tqdm
 
 class Config:
     """Configuração centralizada da aplicação"""
-    
+
     # API e requisições
     WIKTIONARY_API_URL = "https://en.wiktionary.org/w/api.php"
-    USER_AGENT = "WiktionaryExporter/1.0 (+https://github.com/yourusername/wiktionary-exporter)"
+    USER_AGENT = "WiktionaryExporter/2.0 (+https://github.com/yourusername/wiktionary-exporter)"
     REQUEST_TIMEOUT = 30
-    REQUEST_DELAY = 1.0  # segundos entre requisições
     MAX_BATCH_SIZE = 50  # máximo de páginas por requisição em lotes
     MAX_RETRIES = 3
     RETRY_DELAY = 5.0
-    
+
+    # Controle de taxa de requisição: agora é um limite GLOBAL (compartilhado entre
+    # threads) de requisições por segundo, em vez de um sleep fixo por requisição.
+    # A API do Wiktionary/MediaWiki pede "não mais que uns poucos req/s" pra bots
+    # sem permissão especial — 5/s é um valor respeitoso mas bem mais rápido que 1/s.
+    MAX_REQUESTS_PER_SECOND = 5
+
+    # Número de páginas processadas em paralelo (fetch de conteúdo + templates).
+    # A escrita em arquivo continua sequencial (single-thread), só o I/O de rede
+    # que é paralelizado. Não precisa ser maior que MAX_REQUESTS_PER_SECOND * 2,
+    # aumentar além disso só cria threads ociosas esperando o rate limiter.
+    MAX_WORKERS = 8
+
+    # Namespaces conhecidos do MediaWiki que NÃO são artigos de verbete
+    # (usado pra filtrar títulos com ":" que não são páginas normais)
+    KNOWN_NAMESPACE_PREFIXES = [
+        'wiktionary:', 'help:', 'appendix:', 'template:', 'category:',
+        'module:', 'file:', 'mediawiki:', 'user:', 'talk:', 'special:',
+        'thesaurus:', 'reconstruction:', 'citations:', 'index:', 'rhymes:'
+    ]
+
     # Palavras-chave de inclusão padrão (sempre priorizadas)
     DEFAULT_INCLUDE_KEYWORDS = [
         'all topics',
@@ -49,29 +81,34 @@ class Config:
         'terms by usage',
         'varieties of'
     ]
-    
+
     # Exportação
     MAX_WORDS_PER_FILE = 500000
     MAIN_NAMESPACE_ONLY = True
     EXPORT_TEMPLATE_SOURCES = True
     MAX_TEMPLATE_SOURCES_PER_PAGE = 12
     OUTPUT_DIR = "wiktionary_exports"
-    EXPORT_TIMESTAMP = datetime.now().strftime("%Y%m%d_%H%M%S")
-    
-    # Tracking
+
+    # Tracking - agora por categoria, não por timestamp de execução.
+    # Isso é o que permite retomar exportações sem reprocessar tudo.
     TRACKING_DIR = "wiktionary_tracking"
-    TRACKING_FILE = f"exported_{EXPORT_TIMESTAMP}.json"
-    
-    # Logging
+
+    # Logging - um log por dia é suficiente; não precisa de um arquivo por execução
     LOG_DIR = "logs"
-    LOG_FILE = f"wiktionary_export_{EXPORT_TIMESTAMP}.log"
-    
+    LOG_FILE = f"wiktionary_export_{datetime.now().strftime('%Y%m%d')}.log"
+
     @classmethod
     def ensure_directories(cls):
         """Cria diretórios necessários"""
         Path(cls.OUTPUT_DIR).mkdir(exist_ok=True)
         Path(cls.TRACKING_DIR).mkdir(exist_ok=True)
         Path(cls.LOG_DIR).mkdir(exist_ok=True)
+
+    @classmethod
+    def tracking_file_for(cls, category: str) -> str:
+        """Nome do arquivo de tracking baseado na categoria (estável entre execuções)"""
+        safe_name = re.sub(r'[^a-zA-Z0-9_-]+', '_', category.strip().lower())
+        return os.path.join(cls.TRACKING_DIR, f"exported_{safe_name}.json")
 
 
 # ============================================================================
@@ -81,18 +118,16 @@ class Config:
 def setup_logging():
     """Configura sistema de logging"""
     Config.ensure_directories()
-    
     log_path = os.path.join(Config.LOG_DIR, Config.LOG_FILE)
-    
+
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s',
         handlers=[
-            logging.FileHandler(log_path),
+            logging.FileHandler(log_path, encoding='utf-8'),
             logging.StreamHandler()
         ]
     )
-    
     return logging.getLogger(__name__)
 
 
@@ -104,14 +139,14 @@ logger = setup_logging()
 # ============================================================================
 
 class TrackingManager:
-    """Gerencia quais artigos já foram exportados"""
-    
-    def __init__(self):
+    """Gerencia quais artigos já foram exportados, persistente por categoria"""
+
+    def __init__(self, category: str):
         Config.ensure_directories()
-        self.tracking_file = os.path.join(Config.TRACKING_DIR, Config.TRACKING_FILE)
+        self.tracking_file = Config.tracking_file_for(category)
         self.exported_pages: Set[str] = set()
         self.load_tracking()
-    
+
     def load_tracking(self):
         """Carrega lista de páginas já exportadas"""
         if os.path.exists(self.tracking_file):
@@ -119,32 +154,31 @@ class TrackingManager:
                 with open(self.tracking_file, 'r', encoding='utf-8') as f:
                     data = json.load(f)
                     self.exported_pages = set(data.get('exported_pages', []))
-                    logger.info(f"Carregadas {len(self.exported_pages)} páginas já exportadas")
+                    logger.info(f"Carregadas {len(self.exported_pages)} páginas já exportadas de {self.tracking_file}")
             except Exception as e:
                 logger.warning(f"Erro ao carregar tracking: {e}")
-    
+        else:
+            logger.info(f"Nenhum tracking anterior encontrado, começando do zero ({self.tracking_file})")
+
     def save_tracking(self):
         """Salva lista de páginas exportadas"""
         try:
             with open(self.tracking_file, 'w', encoding='utf-8') as f:
                 json.dump({
-                    'exported_pages': sorted(list(self.exported_pages)),
+                    'exported_pages': sorted(self.exported_pages),
                     'timestamp': datetime.now().isoformat(),
                     'total': len(self.exported_pages)
                 }, f, ensure_ascii=False, indent=2)
         except Exception as e:
             logger.error(f"Erro ao salvar tracking: {e}")
-    
+
     def is_exported(self, page_title: str) -> bool:
-        """Verifica se página já foi exportada"""
         return page_title in self.exported_pages
-    
+
     def mark_exported(self, page_title: str):
-        """Marca página como exportada"""
         self.exported_pages.add(page_title)
-    
+
     def get_exported_count(self) -> int:
-        """Retorna número de páginas exportadas"""
         return len(self.exported_pages)
 
 
@@ -153,57 +187,81 @@ class TrackingManager:
 # ============================================================================
 
 class OutputManager:
-    """Gerencia escrita em arquivos com split automático"""
-    
+    """Gerencia escrita em arquivos com split automático.
+
+    Ao reabrir um arquivo existente (retomando uma exportação), lê a contagem
+    real de palavras já escritas, em vez de assumir 0. Isso evita que o split
+    por MAX_WORDS_PER_FILE fique incorreto entre execuções.
+    """
+
     def __init__(self, category_name: str, section: Optional[str]):
         Config.ensure_directories()
         self.category_name = category_name.replace(" ", "_").replace("/", "_")
         self.section = section.replace(" ", "_") if section else "full_article"
-        self.current_file_num = 1
-        self.current_word_count = 0
+        self.current_file_num = self._detect_last_file_num()
+        self.current_word_count = self._count_words_in_current_file()
         self.current_file = None
         self.active = False
-        self._open_new_file()
-    
-    def _open_new_file(self):
-        """Abre novo arquivo de saída"""
+        self._open_new_file(append=True)
+
+    def _filepath(self, num: int) -> str:
+        filename = f"{self.category_name}_{self.section}_part{num}.txt"
+        return os.path.join(Config.OUTPUT_DIR, filename)
+
+    def _detect_last_file_num(self) -> int:
+        """Encontra o maior número de parte já existente pra essa categoria/seção"""
+        num = 1
+        while os.path.exists(self._filepath(num + 1)):
+            num += 1
+        return num
+
+    def _count_words_in_current_file(self) -> int:
+        """Conta palavras já presentes no arquivo atual (se existir)"""
+        path = self._filepath(self.current_file_num)
+        if not os.path.exists(path):
+            return 0
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                return len(f.read().split())
+        except Exception as e:
+            logger.warning(f"Não foi possível contar palavras existentes em {path}: {e}")
+            return 0
+
+    def _open_new_file(self, append: bool = False):
+        """Abre arquivo de saída (append se já existir e estivermos retomando)"""
         if self.current_file is not None:
             self.current_file.close()
-        
-        filename = f"{self.category_name}_{self.section}_part{self.current_file_num}.txt"
-        filepath = os.path.join(Config.OUTPUT_DIR, filename)
-        
-        self.current_file = open(filepath, 'a', encoding='utf-8')
+
+        filepath = self._filepath(self.current_file_num)
+        mode = 'a' if append else 'w'
+        self.current_file = open(filepath, mode, encoding='utf-8')
         self.active = True
-        logger.info(f"Arquivo aberto: {filename}")
-    
+        logger.info(f"Arquivo aberto ({'append' if append else 'novo'}): {filepath}")
+
     def write_article(self, title: str, content: str):
         """Escreve artigo no arquivo, faz split se necessário"""
         word_count = len(content.split())
-        
-        # Se adicionar este artigo ultrapassaria o limite, cria novo arquivo
+
         if self.current_word_count + word_count > Config.MAX_WORDS_PER_FILE:
             self.current_file_num += 1
             self.current_word_count = 0
-            self._open_new_file()
-        
-        # Escreve cabeçalho e conteúdo
+            self._open_new_file(append=False)
+
         self.current_file.write(f"\n{'='*80}\n")
         self.current_file.write(f"TITLE: {title}\n")
         self.current_file.write(f"EXTRACTED: {datetime.now().isoformat()}\n")
         self.current_file.write(f"{'='*80}\n\n")
         self.current_file.write(content)
         self.current_file.write(f"\n\n")
-        
+
         self.current_word_count += word_count
         self.current_file.flush()
-    
+
     def close(self):
-        """Fecha arquivo atual"""
         if self.current_file:
             self.current_file.close()
             self.active = False
-            logger.info(f"Arquivo fechado (total de palavras: {self.current_word_count})")
+            logger.info(f"Arquivo fechado (total de palavras no arquivo atual: {self.current_word_count})")
 
 
 # ============================================================================
@@ -212,21 +270,42 @@ class OutputManager:
 
 class WikiApiClient:
     """Cliente para requisições à API MediaWiki (Wiktionary)"""
-    
+
     def __init__(self):
         self.session = requests.Session()
         self.session.headers.update({'User-Agent': Config.USER_AGENT})
-        self.last_request_time = 0
-    
+        # Cache de templates: cada template só é buscado uma vez na execução inteira,
+        # em vez de uma vez por página que o referencia. Protegido por lock porque
+        # múltiplas threads podem tentar buscar o mesmo template ao mesmo tempo.
+        self._template_cache: Dict[str, Optional[str]] = {}
+        self._template_cache_lock = threading.Lock()
+
+        # Rate limiter de janela deslizante, compartilhado entre todas as threads.
+        # Garante no máximo MAX_REQUESTS_PER_SECOND requisições por segundo no total,
+        # não por thread — então paralelizar não estoura o limite de fato usado.
+        self._rate_lock = threading.Lock()
+        self._request_timestamps: deque = deque()
+
     def _throttle(self):
-        """Implementa delay entre requisições"""
-        elapsed = time.time() - self.last_request_time
-        if elapsed < Config.REQUEST_DELAY:
-            time.sleep(Config.REQUEST_DELAY - elapsed)
-        self.last_request_time = time.time()
-    
+        """Bloqueia até haver uma 'vaga' na janela de 1s, de forma thread-safe"""
+        while True:
+            with self._rate_lock:
+                now = time.time()
+                # remove timestamps com mais de 1s
+                while self._request_timestamps and now - self._request_timestamps[0] > 1.0:
+                    self._request_timestamps.popleft()
+
+                if len(self._request_timestamps) < Config.MAX_REQUESTS_PER_SECOND:
+                    self._request_timestamps.append(now)
+                    return
+
+                # calcula quanto falta pro mais antigo "expirar" da janela
+                wait_time = 1.0 - (now - self._request_timestamps[0])
+
+            if wait_time > 0:
+                time.sleep(wait_time)
+
     def _request_with_retry(self, params: Dict) -> Optional[Dict]:
-        """Faz requisição com retry automático"""
         for attempt in range(Config.MAX_RETRIES):
             try:
                 self._throttle()
@@ -244,14 +323,14 @@ class WikiApiClient:
                 else:
                     logger.error(f"Falha após {Config.MAX_RETRIES} tentativas: {e}")
                     return None
-    
+
     def get_category_members(self, category: str, limit: int = 1000) -> List[str]:
         """Obtém membros de uma categoria"""
         members = []
         continue_token = None
-        
+
         pbar = tqdm(desc=f"Carregando membros de '{category}'", unit=" membros")
-        
+
         while len(members) < limit:
             params = {
                 'action': 'query',
@@ -261,14 +340,13 @@ class WikiApiClient:
                 'cmlimit': 'max',
                 'format': 'json'
             }
-            
             if continue_token:
                 params['cmcontinue'] = continue_token
-            
+
             data = self._request_with_retry(params)
             if not data:
                 break
-            
+
             members_batch = data.get('query', {}).get('categorymembers', [])
             for member in members_batch:
                 if len(members) >= limit:
@@ -277,27 +355,35 @@ class WikiApiClient:
                 ns = member.get('ns', 0)
                 if Config.MAIN_NAMESPACE_ONLY and ns not in (0, 14):
                     continue
-                if ns == 0 and ':' in title:
-                    # Segurança extra: evita namespaces como Wiktionary:, Help:, Appendix:, Template:
+                if ns == 0 and self._looks_like_non_article_namespace(title):
                     continue
                 members.append(title)
                 pbar.update(1)
-            
-            # Verifica se há mais páginas
+
             if 'continue' not in data:
                 break
-            
             continue_token = data['continue'].get('cmcontinue')
-        
+
         pbar.close()
         return members[:limit]
-    
+
+    @staticmethod
+    def _looks_like_non_article_namespace(title: str) -> bool:
+        """Filtra apenas prefixos de namespace conhecidos, não qualquer ':'.
+
+        Títulos reais de verbete podem conter ':' (ex: entradas de reconstrução
+        listadas fora do namespace correspondente, símbolos, etc), então o filtro
+        antigo (qualquer ':' descarta) era grosseiro demais.
+        """
+        if ':' not in title:
+            return False
+        prefix = title.split(':', 1)[0].strip().lower() + ':'
+        return prefix in Config.KNOWN_NAMESPACE_PREFIXES
+
     def get_page_content(self, title: str) -> Optional[str]:
-        """Obtém conteúdo completo bruto (wikitext) de uma página"""
         return self._get_raw_wikitext(title)
 
     def _get_raw_wikitext(self, title: str) -> Optional[str]:
-        """Busca o wikitext completo da página via API"""
         params = {
             'action': 'query',
             'titles': title,
@@ -328,20 +414,14 @@ class WikiApiClient:
             )
             if content:
                 return content
-
         return None
 
     def _extract_template_names(self, wikitext: str) -> List[str]:
-        """Extrai nomes de templates usados no wikitext."""
-        import re
-
         names = []
         seen = set()
         for match in re.finditer(r'\{\{\s*([^\{\}\|\n]+)', wikitext):
             name = match.group(1).strip()
-            if not name:
-                continue
-            if name.startswith('#'):
+            if not name or name.startswith('#'):
                 continue
             name = name.split('|', 1)[0].strip()
             name = name.split(':', 1)[0].strip()
@@ -355,37 +435,42 @@ class WikiApiClient:
         return names
 
     def get_template_sources(self, wikitext: str, max_templates: Optional[int] = None) -> str:
-        """Retorna o wikitext bruto das templates referenciadas no texto."""
+        """Retorna o wikitext bruto das templates referenciadas no texto.
+
+        Usa cache em memória (self._template_cache): um template como
+        {{en-noun}}, que aparece em milhares de verbetes, só é buscado
+        na API uma vez por execução inteira.
+        """
         limit = max_templates or Config.MAX_TEMPLATE_SOURCES_PER_PAGE
         template_names = self._extract_template_names(wikitext)[:limit]
         blocks = []
 
         for template_name in template_names:
             template_title = f"Template:{template_name}"
-            template_text = self._get_raw_wikitext(template_title)
+
+            with self._template_cache_lock:
+                cached = template_title in self._template_cache
+                template_text = self._template_cache.get(template_title)
+
+            if not cached:
+                template_text = self._get_raw_wikitext(template_title)
+                with self._template_cache_lock:
+                    self._template_cache[template_title] = template_text
+
             if not template_text:
                 continue
+
             blocks.append(
                 f"\n\n--- TEMPLATE SOURCE: {template_title} ---\n"
                 f"{template_text.strip()}\n"
             )
 
         return ''.join(blocks)
-    
+
     def get_page_section(self, title: str, section: Optional[str] = None, language: Optional[str] = None) -> Optional[str]:
-        """Obtém seção específica de uma página, opcionalmente filtrada por idioma
-        
-        Args:
-            title: Título da página
-            section: Nome da seção (ex: Definition, Etymology) - None = artigo completo
-            language: Idioma específico (ex: English, Portuguese) - opcional
-        """
-        
         raw = self._get_raw_wikitext(title)
         if not raw:
             return None
-
-        import re
 
         heading_re = re.compile(r'^(=+)\s*(.*?)\s*\1\s*$')
         lines = raw.splitlines()
@@ -425,7 +510,6 @@ class WikiApiClient:
                     break
             return lang_start, lang_end
 
-        # Artigo completo: retorna bloco do idioma ou o wikitext bruto
         if section_pattern is None:
             if language_pattern:
                 lang_start, lang_end = find_language_block(language_pattern)
@@ -434,7 +518,6 @@ class WikiApiClient:
                 return '\n'.join(lines[lang_start:lang_end]).strip() or None
             return raw.strip() or None
 
-        # Se idioma foi informado, restringe a busca ao bloco daquele idioma
         search_start = 0
         search_end = len(lines)
         if language_pattern:
@@ -444,7 +527,6 @@ class WikiApiClient:
             search_start = lang_start
             search_end = lang_end
 
-        # Encontra a seção desejada dentro do intervalo definido
         section_start = None
         section_level = None
         for idx in range(search_start, search_end):
@@ -461,15 +543,11 @@ class WikiApiClient:
             return None
 
         return collect_until(search_end, section_start, section_level) or None
-    
+
     def get_pages_batch(self, titles: List[str]) -> Dict[str, str]:
-        """Obtém múltiplas páginas em batch"""
         results = {}
-        
-        # Processa em chunks respeitando MAXBATCHSIZEs
         for i in tqdm(range(0, len(titles), Config.MAX_BATCH_SIZE), desc="Processando batch"):
             chunk = titles[i:i + Config.MAX_BATCH_SIZE]
-            
             params = {
                 'action': 'query',
                 'titles': '|'.join(chunk),
@@ -477,17 +555,14 @@ class WikiApiClient:
                 'explaintext': True,
                 'format': 'json'
             }
-            
             data = self._request_with_retry(params)
             if not data:
                 continue
-            
             pages = data.get('query', {}).get('pages', {})
             for page_data in pages.values():
                 title = page_data.get('title')
                 if title and 'extract' in page_data:
                     results[title] = page_data['extract']
-        
         return results
 
 
@@ -497,7 +572,7 @@ class WikiApiClient:
 
 class CategoryCrawler:
     """Crawler para explorar categorias em profundidade"""
-    
+
     def __init__(
         self,
         api_client: WikiApiClient,
@@ -508,97 +583,62 @@ class CategoryCrawler:
         self.include_keywords = [kw.lower() for kw in (include_keywords or [])]
         self.exclude_keywords = [kw.lower() for kw in (exclude_keywords or [])]
         self.visited_categories: Set[str] = set()
-    
+
     def _should_include_category(self, category_name: str) -> bool:
-        """Verifica se categoria deve ser explorada baseado em palavras-chave
-        
-        As include_keywords PRIORIZAM categorias mas não descartam outras
-        As exclude_keywords DESCARTAM categorias
-        """
         category_lower = category_name.lower()
-        
-        # Se tem palavras de exclusão, descarta a categoria
         for exclude_kw in self.exclude_keywords:
             if exclude_kw in category_lower:
                 return False
-        
-        # Incluir a categoria (as include_keywords só priorizam, não descartam)
         return True
-    
+
     def _should_include_page(self, page_title: str) -> bool:
-        """Verifica se página deve ser coletada baseado em palavras-chave
-        
-        As include_keywords NÃO filtram páginas (apenas priorizam categorias)
-        As exclude_keywords DESCARTAM páginas
-        """
         page_lower = page_title.lower()
-        
-        # Se tem palavras de exclusão, descarta a página
         for exclude_kw in self.exclude_keywords:
             if exclude_kw in page_lower:
                 return False
-        
-        # Páginas não são filtradas por include_keywords, apenas coletadas
         return True
-    
+
     def crawl(
         self,
         start_category: str,
         max_depth: int,
         max_pages: Optional[int] = None
     ) -> List[str]:
-        """
-        Faz crawl de categorias explorando em profundidade
-        
-        Args:
-            start_category: Categoria inicial
-            max_depth: Profundidade máxima
-            max_pages: Máximo de páginas a extrair (None = ilimitado)
-        
-        Returns:
-            Lista de títulos de páginas
-        """
-        queue = deque([(start_category, 0)])  # (categoria, profundidade)
+        queue = deque([(start_category, 0)])
         visited_cats = set()
         collected_pages = []
-        
+
         logger.info(f"Iniciando crawler em '{start_category}' (profundidade: {max_depth})")
-        
         pbar = tqdm(desc="Explorando categorias", unit=" categorias")
-        
+
         while queue and (max_pages is None or len(collected_pages) < max_pages):
             category, depth = queue.popleft()
-            
+
             if category in visited_cats or depth > max_depth:
                 continue
-            
+
             visited_cats.add(category)
             pbar.update(1)
-            
-            # Obtém membros da categoria
+
             members = self.api_client.get_category_members(category, limit=1000)
-            
+
             for member in members:
                 if max_pages and len(collected_pages) >= max_pages:
                     break
-                
-                # Se é categoria, add à fila para explorar
+
                 if member.startswith('Category:'):
                     sub_category = member.replace('Category:', '')
                     if sub_category not in visited_cats and self._should_include_category(sub_category):
                         queue.append((sub_category, depth + 1))
-                # Se é página regular, coleta (respeitando filtros)
                 else:
                     if self._should_include_page(member):
                         collected_pages.append(member)
-        
+
         pbar.close()
-        
         logger.info(
             f"Crawl completo: {len(collected_pages)} páginas coletadas "
             f"({len(visited_cats)} categorias visitadas)"
         )
-        
         return collected_pages
 
 
@@ -608,11 +648,10 @@ class CategoryCrawler:
 
 class WiktionaryExporter:
     """Exportador principal"""
-    
+
     def __init__(self):
         self.api_client = WikiApiClient()
-        self.tracking = TrackingManager()
-    
+
     def export(
         self,
         category: str,
@@ -623,39 +662,23 @@ class WiktionaryExporter:
         exclude_keywords: Optional[List[str]] = None,
         language: Optional[str] = None
     ):
-        """
-        Executa exportação completa
-        
-        Args:
-            category: Categoria inicial
-            section: Seção a extrair (ex: "Definition", "Etymology")
-            max_depth: Profundidade de exploração
-            max_pages: Máximo de páginas
-            include_keywords: Palavras-chave prioritárias (merged com defaults)
-            exclude_keywords: Palavras-chave de exclusão
-            language: Idioma específico para filtrar (ex: "English", "Portuguese") - opcional
-        """
+        # Tracking por categoria: cria (ou carrega) o arquivo certo pra essa exportação
+        tracking = TrackingManager(category)
 
-        # Se a categoria é uma categoria-mãe de idioma e o idioma não foi informado,
-        # tenta inferir automaticamente para ignorar páginas meta como guidelines.
         if language is None and category.lower().endswith(" language"):
             inferred_language = category[:-len(" language")].strip()
             if inferred_language:
                 language = inferred_language
                 logger.info(f"Idioma inferido automaticamente a partir da categoria: {language}")
-        
-        # Combina include_keywords com padrões
+
         final_include_keywords = Config.DEFAULT_INCLUDE_KEYWORDS.copy()
         if include_keywords:
             final_include_keywords.extend(include_keywords)
-        
-        logger.info("="*80)
+
+        logger.info("=" * 80)
         logger.info("INICIANDO EXPORTAÇÃO WIKTIONARY")
         logger.info(f"Categoria: {category}")
-        if section:
-            logger.info(f"Seção: {section}")
-        else:
-            logger.info(f"Seção: Artigo Completo (todas as seções)")
+        logger.info(f"Seção: {section if section else 'Artigo Completo (todas as seções)'}")
         if language:
             logger.info(f"Idioma: {language}")
         logger.info(f"Profundidade: {max_depth}")
@@ -665,62 +688,45 @@ class WiktionaryExporter:
             logger.info(f"Inclusões adicionais: {', '.join(include_keywords)}")
         if exclude_keywords:
             logger.info(f"Exclusões: {', '.join(exclude_keywords)}")
-        logger.info("="*80)
-        
-        # 1. Crawl de categorias
+        logger.info("=" * 80)
+
         crawler = CategoryCrawler(
             self.api_client,
             include_keywords=final_include_keywords,
             exclude_keywords=exclude_keywords
         )
-        
+
         pages = crawler.crawl(category, max_depth, max_pages)
         logger.info(f"Total de páginas para processar: {len(pages)}")
-        
-        # 2. Filtra páginas já exportadas
-        pages_to_export = [
-            p for p in pages
-            if not self.tracking.is_exported(p)
-        ]
-        
-        logger.info(
-            f"Páginas já exportadas (skip): {len(pages) - len(pages_to_export)}"
-        )
+
+        pages_to_export = [p for p in pages if not tracking.is_exported(p)]
+
+        logger.info(f"Páginas já exportadas (skip): {len(pages) - len(pages_to_export)}")
         logger.info(f"Páginas a exportar: {len(pages_to_export)}")
-        
+
         if not pages_to_export:
             logger.warning("Nenhuma página nova para exportar!")
             return
-        
-        # 3. Exporta páginas
+
         output = OutputManager(category, section)
-        
+
         stats = {
             'total_pages': len(pages_to_export),
             'exported_pages': 0,
             'failed_pages': 0,
             'empty_sections': 0
         }
-        
-        pbar = tqdm(pages_to_export, desc="Exportando páginas", unit=" página")
-        
-        for page_title in pbar:
-            try:
-                # Obtém seção específica
-                content = self.api_client.get_page_section(page_title, section, language)
-                
-                if not content:
-                    stats['empty_sections'] += 1
-                    if section:
-                        if language:
-                            logger.warning(f"Seção '{section}' em {language} não encontrada em: {page_title}")
-                        else:
-                            logger.warning(f"Seção '{section}' não encontrada em: {page_title}")
-                    else:
-                        logger.warning(f"Artigo vazio ou sem conteúdo: {page_title}")
-                    continue
 
-                # Anexa fontes dos templates usados no texto para ajudar a IA a interpretar o verbete
+        def fetch_page(page_title: str) -> Tuple[str, Optional[str], Optional[str]]:
+            """Busca conteúdo + templates de uma página. Roda em thread paralela.
+            Retorna (título, conteúdo_final_ou_None, erro_ou_None). Não escreve nada
+            em disco aqui — só faz o trabalho de rede, que é o que vale a pena paralelizar.
+            """
+            try:
+                content = self.api_client.get_page_section(page_title, section, language)
+                if not content:
+                    return page_title, None, None
+
                 if Config.EXPORT_TEMPLATE_SOURCES:
                     template_sources = self.api_client.get_template_sources(content)
                     if template_sources:
@@ -731,127 +737,134 @@ class WiktionaryExporter:
                             + "=" * 80
                             + template_sources
                         )
-                
-                # Escreve no arquivo
-                output.write_article(page_title, content)
-                
-                # Marca como exportado
-                self.tracking.mark_exported(page_title)
-                stats['exported_pages'] += 1
-                
+                return page_title, content, None
+            except Exception as e:
+                return page_title, None, str(e)
+
+        pbar = tqdm(total=len(pages_to_export), desc="Exportando páginas", unit=" página")
+
+        with ThreadPoolExecutor(max_workers=Config.MAX_WORKERS) as executor:
+            futures = {executor.submit(fetch_page, title): title for title in pages_to_export}
+
+            for future in as_completed(futures):
+                page_title, content, error = future.result()
+
+                if error is not None:
+                    stats['failed_pages'] += 1
+                    logger.error(f"Erro ao processar '{page_title}': {error}")
+                elif content is None:
+                    stats['empty_sections'] += 1
+                    if section:
+                        msg = f"Seção '{section}'"
+                        if language:
+                            msg += f" em {language}"
+                        logger.warning(f"{msg} não encontrada em: {page_title}")
+                    else:
+                        logger.warning(f"Artigo vazio ou sem conteúdo: {page_title}")
+                else:
+                    # Escrita em arquivo acontece só aqui, no thread principal —
+                    # OutputManager não é thread-safe, então isso tem que ficar serializado.
+                    output.write_article(page_title, content)
+                    tracking.mark_exported(page_title)
+                    stats['exported_pages'] += 1
+                    if stats['exported_pages'] % 25 == 0:
+                        tracking.save_tracking()
+
+                pbar.update(1)
                 pbar.set_postfix({
                     'exported': stats['exported_pages'],
                     'failed': stats['failed_pages'],
                     'empty': stats['empty_sections']
                 })
-                
-            except Exception as e:
-                stats['failed_pages'] += 1
-                logger.error(f"Erro ao processar '{page_title}': {e}")
-        
-        # 4. Finaliza
+
+        pbar.close()
         output.close()
-        self.tracking.save_tracking()
-        
-        logger.info("="*80)
+        tracking.save_tracking()
+
+        logger.info("=" * 80)
         logger.info("EXPORTAÇÃO CONCLUÍDA")
         logger.info(f"Páginas exportadas: {stats['exported_pages']}")
         logger.info(f"Páginas falhadas: {stats['failed_pages']}")
         logger.info(f"Seções vazias: {stats['empty_sections']}")
-        logger.info(f"Total exportado anteriormente: {self.tracking.get_exported_count()}")
-        logger.info("="*80)
+        logger.info(f"Total exportado (histórico desta categoria): {tracking.get_exported_count()}")
+        logger.info("=" * 80)
 
 
 # ============================================================================
 # INTERFACE INTERATIVA
 # ============================================================================
 
+def _print_and_log(msg: str):
+    print(msg)
+    logger.info(msg)
+
+
 def get_user_config() -> Dict:
-    """Coleta configuração interativa do usuário"""
-    print("\n" + "="*80)
-    print("WIKTIONARY EXPORTER - MODO INTERATIVO")
-    print("="*80 + "\n")
-    
+    _print_and_log("=" * 80)
+    _print_and_log("WIKTIONARY EXPORTER - MODO INTERATIVO")
+    _print_and_log("=" * 80)
+
     config = {}
-    
-    # Categoria
-    config['category'] = input("📂 Digite a categoria inicial (ex: 'English nouns'): ").strip()
+
+    config['category'] = input("\n📂 Digite a categoria inicial (ex: 'English nouns'): ").strip()
     if not config['category']:
         config['category'] = 'English nouns'
-        print(f"   → Usando padrão: {config['category']}")
-    
-    # Seção
+        _print_and_log(f"   → Usando padrão: {config['category']}")
+
     config['section'] = input("\n📄 Digite a seção a extrair (ex: 'Definition', 'Etymology') [vazio=artigo completo]: ").strip()
     if config['section']:
-        print(f"   → Seção: {config['section']}")
+        _print_and_log(f"   → Seção: {config['section']}")
     else:
         config['section'] = None
-        print(f"   → Exportando artigo completo (todas as seções)")
-    
-    # Idioma (opcional)
+        _print_and_log("   → Exportando artigo completo (todas as seções)")
+
     config['language'] = input("\n🌐 Digite o idioma para filtrar (ex: 'English', 'Portuguese') [vazio=todos]: ").strip()
     if config['language']:
-        print(f"   → Filtrando por idioma: {config['language']}")
+        _print_and_log(f"   → Filtrando por idioma: {config['language']}")
     else:
         config['language'] = None
-        print(f"   → Sem filtro de idioma (todos os idiomas)")
-    
-    # Profundidade
+        _print_and_log("   → Sem filtro de idioma (todos os idiomas)")
+
     while True:
         try:
             depth = input("\n⬇️  Profundidade de exploração [1-5]: ").strip()
             config['max_depth'] = int(depth) if depth else 2
             if 1 <= config['max_depth'] <= 5:
-                print(f"   → Profundidade: {config['max_depth']}")
+                _print_and_log(f"   → Profundidade: {config['max_depth']}")
                 break
         except ValueError:
             pass
         print("   ❌ Digite um número entre 1 e 5")
-    
-    # Máximo de páginas
+
     while True:
         try:
             max_p = input("\n🔢 Máximo de páginas [vazio=ilimitado]: ").strip()
             config['max_pages'] = int(max_p) if max_p else None
-            if config['max_pages']:
-                print(f"   → Máximo: {config['max_pages']} páginas")
-            else:
-                print("   → Sem limite de páginas")
+            _print_and_log(f"   → Máximo: {config['max_pages']} páginas" if config['max_pages'] else "   → Sem limite de páginas")
             break
         except ValueError:
             print("   ❌ Digite um número válido ou deixe vazio")
-    
-    # Palavras-chave inclusão
+
     include = input("\n✅ Palavras-chave ADICIONAIS para INCLUIR (separadas por vírgula) [vazio=apenas padrões]: ").strip()
     user_include = [kw.strip() for kw in include.split(',')] if include else []
-    
-    # Combina com palavras-chave padrão
     config['include_keywords'] = Config.DEFAULT_INCLUDE_KEYWORDS + user_include
-    print(f"   → Priorizando padrão: {', '.join(Config.DEFAULT_INCLUDE_KEYWORDS)}")
+    _print_and_log(f"   → Priorizando padrão: {', '.join(Config.DEFAULT_INCLUDE_KEYWORDS)}")
     if user_include:
-        print(f"   → Priorizando adicional: {', '.join(user_include)}")
-    
-    # Palavras-chave exclusão
+        _print_and_log(f"   → Priorizando adicional: {', '.join(user_include)}")
+
     exclude = input("\n❌ Palavras-chave para EXCLUIR (separadas por vírgula) [vazio=nenhuma]: ").strip()
     config['exclude_keywords'] = [kw.strip() for kw in exclude.split(',')] if exclude else None
     if config['exclude_keywords']:
-        print(f"   → Excluindo: {', '.join(config['exclude_keywords'])}")
-    
-    print("\n" + "="*80)
-    
+        _print_and_log(f"   → Excluindo: {', '.join(config['exclude_keywords'])}")
+
+    _print_and_log("=" * 80)
     return config
 
 
 def main():
-    """Função principal"""
     try:
-        # Coleta configuração
         config = get_user_config()
-        
-        # Inicializa exportador
         exporter = WiktionaryExporter()
-        
-        # Executa exportação
         exporter.export(
             category=config['category'],
             section=config['section'],
@@ -861,12 +874,10 @@ def main():
             exclude_keywords=config['exclude_keywords'],
             language=config['language']
         )
-        
-        print("\n✅ Exportação finalizada com sucesso!")
-        
+        _print_and_log("✅ Exportação finalizada com sucesso!")
+
     except KeyboardInterrupt:
-        print("\n\n⚠️  Exportação cancelada pelo usuário")
-        logger.info("Exportação cancelada pelo usuário")
+        _print_and_log("⚠️  Exportação cancelada pelo usuário")
     except Exception as e:
         print(f"\n❌ Erro fatal: {e}")
         logger.exception("Erro fatal na exportação")
