@@ -1,6 +1,23 @@
 
 @url = http://localhost:3000
 
+# ========================================
+# Roteiro 10 - Validacao de persistencia
+# ========================================
+
+POST {{url}}/lab/tarefas
+Content-Type: application/json
+
+{
+    "descricao": "Primeira tarefa persistida no PostgreSQL"
+}
+
+###
+
+GET {{url}}/lab/tarefas
+
+###
+
 GET {{url}}/tarefas
 
 ###
@@ -29,7 +46,7 @@ GET {{url}}/tarefas/1
 
 ###
 
-PUT {{url}}/tarefas/1
+PATCH {{url}}/tarefas/1
 Content-Type: application/json
 
 {

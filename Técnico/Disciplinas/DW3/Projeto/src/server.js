@@ -39,9 +39,13 @@ server.register(exemplosRoutes, { prefix: '/exemplos' })
 // ========================================
 server.post('/lab/tarefas', async (request, reply) => {
   const { descricao } = request.body
+  if (!descricao || typeof descricao !== 'string' || descricao.trim() === '') {
+    throw new ValidationError('A descricao da tarefa e obrigatoria e deve ser uma string nao vazia.')
+  }
+
   const result = await pool.query(
     'INSERT INTO tarefas (descricao, concluido) VALUES ($1, $2) RETURNING *',
-    [descricao, false]
+    [descricao.trim(), false]
   )
   return reply.status(201).send(result.rows[0])
 })
