@@ -5,12 +5,7 @@ import TarefaRepository from './repositories/tarefa.repository.js'
 import TarefaService from './services/tarefa.service.js'
 import TarefaController from './controllers/tarefa.controller.js'
 import { 
-  AppError, 
-  ValidationError, 
-  NotFoundError, 
-  ConflictError,
-  UnauthorizedError,
-  ForbiddenError 
+  AppError
 } from './shared/errors/AppError.js'
 import exemplosRoutes from './features/exemplos/exemplos.routes.js'
 import pool from './database/pool.js'
@@ -32,28 +27,6 @@ const controller = new TarefaController(service)
 
 server.register(tarefaRoutes, { prefix: '/tarefas', controller })
 server.register(exemplosRoutes, { prefix: '/exemplos' })
-
-// ========================================
-// Rotas de laboratório (validação SQL)
-// Remover após confirmação do ambiente
-// ========================================
-server.post('/lab/tarefas', async (request, reply) => {
-  const { descricao } = request.body
-  if (!descricao || typeof descricao !== 'string' || descricao.trim() === '') {
-    throw new ValidationError('A descricao da tarefa e obrigatoria e deve ser uma string nao vazia.')
-  }
-
-  const result = await pool.query(
-    'INSERT INTO tarefas (descricao, concluido) VALUES ($1, $2) RETURNING *',
-    [descricao.trim(), false]
-  )
-  return reply.status(201).send(result.rows[0])
-})
-
-server.get('/lab/tarefas', async (request, reply) => {
-  const result = await pool.query('SELECT * FROM tarefas')
-  return reply.send(result.rows)
-})
 
 // ========================================
 // Error Handler Global
